@@ -648,23 +648,174 @@ function showToast(msg) {
 function exportExcel() {
   if (!scheduleData) return;
   const sd = scheduleData, wb = XLSX.utils.book_new();
-  const rows = [['สัปดาห์','วันที่','วัน','ประเภท','รายละเอียด','ระยะ (km)','Pace (/km)','เวลาวิ่ง']];
-  sd.weeks.forEach(w => {
-    const wl = w.isRaceWeek?'Race Week':w.isDeload?'Recovery Week':`Week ${w.weekNum}`;
-    w.days.forEach(d => rows.push([wl, d.date.toLocaleDateString('th-TH'), DAY_TH[d.dow], d.label, d.desc, d.km||'', d.pace!=='-'?d.pace:'', d.time!=='-'?d.time:'']));
+
+  // ── helpers ──
+  function paceToSec(p) {
+    if (!p || p==='-') return 0;
+    const [m,s] = p.split(':').map(Number); return m*60+(s||0);
+  }
+  function calcDuration(km, paceStr) {
+    const sec = km * paceToSec(paceStr); if (!sec) return '-';
+    const m=Math.floor(sec/60), s=Math.floor(sec%60);
+    return `${m}:${String(s).padStart(2,'0')}`;
+  }
+  function enc(r,c){ return XLSX.utils.encode_cell({r,c}); }
+  function setCell(ws,r,c,v,t='s'){ ws[enc(r,c)]={t,v}; }
+  function setFml(ws,r,c,f,t='s',v=''){ws[enc(r,c)]={t,f,v};}
+
+  // ════════════════════════════════════════
+  //  SHEET 1 : ตารางซ้อม
+  //  A  สัปดาห์
+  //  B  วันที่
+  //  C  วัน
+  //  D  ประเภทการซ้อม
+  //  E  รายละเอียด
+  //  F  ระยะแผน (km)
+  //  G  Pace แผน (/km)
+  //  H  ระยะเวลา/Session (แผน)   ← คำนวณจาก F×G
+  //  I  ★ ระยะจริง (km)          ← ผู้ใช้กรอก
+  //  J  ★ เวลาจริง (นาที)        ← ผู้ใช้กรอก  เช่น 45.5 = 45:30
+  //  K  Pace จริง (/km)          ← สูตร
+  //  L  ผลการวิ่ง                ← สูตร
+  // ════════════════════════════════════════
+  const ws1 = {};
+  const HDR1 = ['สัปดาห์','วันที่','วัน','ประเภทการซ้อม','รายละเอียด',
+    'ระยะแผน (km)','Pace แผน (/km)','ระยะเวลา/Session (แผน)',
+    '★ ระยะจริง (km)','★ เวลาจริง (นาที)','Pace จริง (/km)','ผลการวิ่ง'];
+  HDR1.forEach((h,c)=>setCell(ws1,0,c,h));
+
+  // Sub-header hint row
+  const HINT = ['','','','','',
+    'กม.','นาที:วิ','นาที:วิ (ประมาณ)',
+    'กรอกระยะที่วิ่งได้จริง','กรอกเวลารวม เช่น 45.5 = 45:30','คำนวณอัตโนมัติ','คำนวณอัตโนมัติ'];
+  HINT.forEach((h,c)=>setCell(ws1,1,c,h));
+
+  let r = 2; // next data row (0-indexed)
+  sd.weeks.forEach(week => {
+    const wl = week.isRaceWeek ? 'Race Week'
+             : week.isDeload   ? 'Recovery Week'
+             : `Week ${week.weekNum}`;
+    week.days.forEach(day => {
+      const exR = r+1; // Excel row number (1-indexed) for formula text
+      const isRun = day.type !== 'rest';
+      setCell(ws1, r, 0, wl);
+      setCell(ws1, r, 1, day.date.toLocaleDateString('th-TH'));
+      setCell(ws1, r, 2, DAY_TH[day.dow]);
+      setCell(ws1, r, 3, day.label);
+      setCell(ws1, r, 4, day.desc);
+      if (isRun) {
+        setCell(ws1, r, 5, day.km,  'n');
+        setCell(ws1, r, 6, day.pace!=='-' ? day.pace : '');
+        setCell(ws1, r, 7, calcDuration(day.km, day.pace));
+        // I, J — blank for user input
+        setCell(ws1, r, 8,  '');
+        setCell(ws1, r, 9,  '');
+        // K — Pace จริง formula: minutes/km → "m:ss"
+        setFml(ws1, r, 10,
+          `=IF(OR(I${exR}="",J${exR}=0),"",`+
+          `TEXT(INT(J${exR}/I${exR}),"0")&":"&`+
+          `TEXT((J${exR}/I${exR}-INT(J${exR}/I${exR}))*60,"00"))`,
+          's', '');
+        // L — ผลการวิ่ง formula: ≥90% of planned = ผ่าน
+        setFml(ws1, r, 11,
+          `=IF(I${exR}="","รอบันทึก",`+
+          `IF(I${exR}>=${day.km}*0.9,"✓ ผ่าน","✗ ไม่ผ่าน"))`,
+          's', 'รอบันทึก');
+      } else {
+        setCell(ws1, r, 5, '-'); setCell(ws1, r, 6, '-');
+        setCell(ws1, r, 7, '-'); setCell(ws1, r, 8, '');
+        setCell(ws1, r, 9, '');  setCell(ws1, r, 10,'—');
+        setCell(ws1, r, 11,'—');
+      }
+      r++;
+    });
   });
-  const ws1 = XLSX.utils.aoa_to_sheet(rows);
-  ws1['!cols'] = [{wch:14},{wch:13},{wch:11},{wch:16},{wch:48},{wch:11},{wch:11},{wch:10}];
+
+  ws1['!ref']  = `A1:L${r}`;
+  ws1['!cols'] = [{wch:14},{wch:13},{wch:11},{wch:18},{wch:44},
+    {wch:12},{wch:13},{wch:20},{wch:18},{wch:20},{wch:15},{wch:15}];
+  // Freeze top 2 rows
+  ws1['!freeze'] = {xSplit:0, ySplit:2};
   XLSX.utils.book_append_sheet(wb, ws1, 'ตารางซ้อม');
 
-  const sum = [['สัปดาห์','ช่วงวันที่','ประเภท','ระยะรวม (km)','วันวิ่ง']];
-  sd.weeks.forEach(w => {
-    const end = new Date(w.start.getTime()+6*86400000);
-    sum.push([`Week ${w.weekNum}`, `${w.start.toLocaleDateString('th-TH')} - ${end.toLocaleDateString('th-TH')}`, w.isRaceWeek?'Race Week':w.isDeload?'Recovery Week':'Training', w.totalKm, w.days.filter(d=>d.type!=='rest').length]);
+  // ════════════════════════════════════════
+  //  SHEET 2 : สรุปรายสัปดาห์
+  //  A  สัปดาห์
+  //  B  ช่วงวันที่
+  //  C  ประเภท
+  //  D  ระยะแผน (km)
+  //  E  ระยะจริง (km)   ← SUMPRODUCT จาก ตารางซ้อม
+  //  F  % จบ            ← สูตร
+  //  G  Sessions ผ่าน/แผน ← COUNTIF + hardcode
+  //  H  สถานะ           ← สูตร
+  // ════════════════════════════════════════
+  const ws2 = {};
+  const HDR2 = ['สัปดาห์','ช่วงวันที่','ประเภท',
+    'ระยะแผน (km)','ระยะจริง (km)','% จบ',
+    'Sessions ผ่าน / แผน','สถานะ'];
+  HDR2.forEach((h,c)=>setCell(ws2,0,c,h));
+
+  // Each week = 7 rows in ตารางซ้อม, data starts at row 3 (Excel) because of hint row
+  // ตารางซ้อม row 1 = header, row 2 = hint, row 3 = first data
+  const S1_DATA_START = 3; // Excel row (1-indexed)
+
+  sd.weeks.forEach((week, wi) => {
+    const s1Start = S1_DATA_START + wi * 7;          // first day of this week in ตารางซ้อม
+    const s1End   = s1Start + 6;                      // last  day
+    const s2Row   = wi + 2;                            // this row in สรุป (Excel 1-indexed)
+    const s2Idx   = wi + 1;                            // 0-indexed in ws2
+    const end     = new Date(week.start.getTime()+6*86400000);
+    const runDays = week.days.filter(d=>d.type!=='rest').length;
+
+    setCell(ws2, s2Idx, 0, `Week ${week.weekNum}`);
+    setCell(ws2, s2Idx, 1, `${week.start.toLocaleDateString('th-TH')} – ${end.toLocaleDateString('th-TH')}`);
+    setCell(ws2, s2Idx, 2, week.isRaceWeek?'Race Week 🏁':week.isDeload?'Recovery Week 💤':'Training Week');
+    setCell(ws2, s2Idx, 3, week.totalKm, 'n');
+
+    // E: ระยะจริง = sum non-empty I cells from ตารางซ้อม for this week
+    setFml(ws2, s2Idx, 4,
+      `=SUMPRODUCT(('ตารางซ้อม'!I${s1Start}:I${s1End}<>"")*`+
+      `IFERROR(VALUE('ตารางซ้อม'!I${s1Start}:I${s1End}),0))`,
+      'n', 0);
+
+    // F: % จบ (E/D * 100)
+    setFml(ws2, s2Idx, 5,
+      `=IFERROR(ROUND(E${s2Row}/D${s2Row}*100,1),0)`,
+      'n', 0);
+
+    // G: sessions ผ่าน / แผน  e.g. "3/4"
+    setFml(ws2, s2Idx, 6,
+      `=COUNTIF('ตารางซ้อม'!L${s1Start}:L${s1End},"✓ ผ่าน")&"/${runDays}"`,
+      's', `0/${runDays}`);
+
+    // H: สถานะ
+    setFml(ws2, s2Idx, 7,
+      `=IF(E${s2Row}=0,"⏳ รอข้อมูล",`+
+      `IF(E${s2Row}>=D${s2Row}*0.9,"✅ ผ่านเป้า","⚠️ ต่ำกว่าเป้า"))`,
+      's', '⏳ รอข้อมูล');
   });
-  sum.push(['','','รวม', sd.weeks.reduce((s,w)=>s+w.totalKm,0).toFixed(1), '']);
-  const ws2 = XLSX.utils.aoa_to_sheet(sum);
-  ws2['!cols'] = [{wch:10},{wch:28},{wch:16},{wch:14},{wch:10}];
+
+  // Totals row
+  const totalIdx = sd.weeks.length + 1;
+  const totalRow = sd.weeks.length + 2;
+  const totalKm  = sd.weeks.reduce((s,w)=>s+w.totalKm,0);
+  setCell(ws2, totalIdx, 0, 'รวมทั้งหมด');
+  setCell(ws2, totalIdx, 1, '');
+  setCell(ws2, totalIdx, 2, '');
+  setCell(ws2, totalIdx, 3, Math.round(totalKm*10)/10, 'n');
+  setFml(ws2, totalIdx, 4, `=SUM(E2:E${totalRow-1})`, 'n', 0);
+  setFml(ws2, totalIdx, 5, `=IFERROR(ROUND(E${totalRow}/D${totalRow}*100,1),0)`, 'n', 0);
+  setFml(ws2, totalIdx, 6,
+    `=SUMPRODUCT(IFERROR(VALUE(LEFT(G2:G${totalRow-1},FIND("/",G2:G${totalRow-1})-1)),0))&`+
+    `"/"&SUMPRODUCT(IFERROR(VALUE(MID(G2:G${totalRow-1},FIND("/",G2:G${totalRow-1})+1,10)),0))`,
+    's','');
+  setFml(ws2, totalIdx, 7,
+    `=IF(E${totalRow}>=D${totalRow}*0.9,"✅ ผ่านเป้าโดยรวม","⚠️ ต่ำกว่าเป้าโดยรวม")`,
+    's','');
+
+  ws2['!ref']  = `A1:H${totalRow}`;
+  ws2['!cols'] = [{wch:12},{wch:30},{wch:20},{wch:14},{wch:14},{wch:8},{wch:20},{wch:20}];
+  ws2['!freeze'] = {xSplit:0, ySplit:1};
   XLSX.utils.book_append_sheet(wb, ws2, 'สรุปรายสัปดาห์');
 
   const dl = sd.dist<=5?'5KM':sd.dist<=10?'10KM':sd.dist<=21.1?'HalfMarathon':'FullMarathon';
