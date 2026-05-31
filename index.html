@@ -1,0 +1,1183 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Running Schedule Planner 🏃</title>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+<style>
+:root {
+  --primary:#FF6B35; --primary-dark:#E55A28; --secondary:#2D3561;
+  --bg:#F8F9FA; --card:#FFFFFF; --text:#2C2C2C; --muted:#6C757D;
+  --border:#DEE2E6; --success:#28A745; --info:#17A2B8;
+  --gradient:linear-gradient(135deg,#FF6B35 0%,#F7C59F 100%);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+header{background:var(--gradient);padding:28px 20px;text-align:center;color:#fff;box-shadow:0 4px 20px rgba(255,107,53,.3)}
+header h1{font-size:2.1em;font-weight:800}
+header p{opacity:.9;margin-top:6px;font-size:1em}
+
+/* NAV TABS */
+.nav-bar{background:#fff;border-bottom:2px solid var(--border);position:sticky;top:0;z-index:200;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+.nav-tabs{max-width:900px;margin:0 auto;display:flex;overflow-x:auto;padding:0 16px}
+.nav-tab{padding:14px 22px;border:none;background:none;cursor:pointer;font-size:.9em;font-weight:600;color:var(--muted);border-bottom:3px solid transparent;transition:all .2s;white-space:nowrap}
+.nav-tab.active{color:var(--primary);border-bottom-color:var(--primary)}
+.nav-tab:hover:not(.active){color:var(--secondary)}
+
+.page{display:none;max-width:900px;margin:30px auto;padding:0 20px 60px}
+.page.active{display:block}
+
+.card{background:var(--card);border-radius:16px;padding:26px;margin-bottom:22px;box-shadow:0 2px 12px rgba(0,0,0,.07);border:1px solid var(--border)}
+.card-header{display:flex;align-items:center;gap:12px;margin-bottom:20px;padding-bottom:14px;border-bottom:2px solid var(--bg)}
+.card-icon{width:44px;height:44px;background:var(--gradient);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.4em;flex-shrink:0}
+.card-header h2{font-size:1.15em;color:var(--secondary);font-weight:700}
+.card-header p{font-size:.83em;color:var(--muted);margin-top:2px}
+.form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px}
+.form-group{display:flex;flex-direction:column;gap:5px}
+.form-group label{font-size:.86em;font-weight:600;color:var(--secondary)}
+.form-group small{color:var(--muted);font-size:.77em}
+input,select{padding:10px 13px;border:1.5px solid var(--border);border-radius:10px;font-size:.93em;transition:all .2s;background:#fff;color:var(--text);width:100%}
+input:focus,select:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(255,107,53,.15)}
+.time-input-group{display:grid;grid-template-columns:1fr 14px 1fr 14px 1fr;gap:5px;align-items:center}
+.time-input-group span{text-align:center;font-weight:700;color:var(--muted)}
+.pr-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+.pr-card{background:var(--bg);border-radius:12px;padding:14px;border:1.5px solid var(--border)}
+.pr-card .distance-label{font-weight:700;color:var(--secondary);margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.distance-badge{background:var(--gradient);color:#fff;padding:2px 10px;border-radius:20px;font-size:.78em}
+.btn{padding:11px 24px;border-radius:12px;border:none;cursor:pointer;font-size:.95em;font-weight:700;transition:all .2s;display:inline-flex;align-items:center;gap:7px}
+.btn-primary{background:var(--gradient);color:#fff;box-shadow:0 4px 15px rgba(255,107,53,.4)}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(255,107,53,.5)}
+.btn-success{background:linear-gradient(135deg,#28A745,#20C997);color:#fff;box-shadow:0 4px 15px rgba(40,167,69,.3)}
+.btn-success:hover{transform:translateY(-2px)}
+.btn-info{background:linear-gradient(135deg,#17A2B8,#6610F2);color:#fff;box-shadow:0 4px 15px rgba(23,162,184,.3)}
+.btn-info:hover{transform:translateY(-2px)}
+.btn-google{background:linear-gradient(135deg,#4285F4,#34A853);color:#fff;box-shadow:0 4px 15px rgba(66,133,244,.3)}
+.btn-google:hover{transform:translateY(-2px)}
+.btn-outline{background:#fff;color:var(--primary);border:2px solid var(--primary)}
+.btn-outline:hover{background:var(--primary);color:#fff}
+.btn-sm{padding:7px 16px;font-size:.83em;border-radius:8px}
+.btn-danger{background:linear-gradient(135deg,#DC3545,#C82333);color:#fff}
+.btn-warn{background:linear-gradient(135deg,#FFC107,#E0A800);color:#212529}
+.action-buttons{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+.section-divider{height:1px;background:var(--border);margin:18px 0}
+.days-selector{display:flex;gap:7px;flex-wrap:wrap}
+.day-toggle{width:44px;height:44px;border-radius:50%;border:2px solid var(--border);background:#fff;cursor:pointer;font-size:.77em;font-weight:600;color:var(--muted);transition:all .2s;display:flex;align-items:center;justify-content:center}
+.day-toggle.active{background:var(--gradient);color:#fff;border-color:var(--primary);box-shadow:0 3px 10px rgba(255,107,53,.3)}
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:14px;margin-bottom:20px}
+.stat-card{background:var(--bg);border-radius:12px;padding:14px;text-align:center;border:1px solid var(--border)}
+.stat-value{font-size:1.55em;font-weight:800;color:var(--primary)}
+.stat-label{font-size:.78em;color:var(--muted);margin-top:3px}
+.pace-guide{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-top:14px}
+.pace-item{background:var(--bg);border-radius:10px;padding:11px 14px;border-left:4px solid var(--primary)}
+.pace-item.tempo{border-color:#FFC107}.pace-item.interval{border-color:#DC3545}.pace-item.long{border-color:#007BFF}
+.pace-label{font-size:.79em;color:var(--muted)}.pace-value{font-size:1.05em;font-weight:700;color:var(--secondary);margin-top:1px}
+.alert{padding:12px 16px;border-radius:10px;margin-bottom:14px;font-size:.88em}
+.alert-info{background:#D1ECF1;color:#0C5460;border-left:4px solid var(--info)}
+.alert-warning{background:#FFF3CD;color:#856404;border-left:4px solid #FFC107}
+.alert-success{background:#D4EDDA;color:#155724;border-left:4px solid #28A745}
+.schedule-week{margin-bottom:14px;border-radius:12px;overflow:hidden;border:1px solid var(--border)}
+.week-header{background:var(--secondary);color:#fff;padding:11px 16px;font-weight:700;display:flex;justify-content:space-between;align-items:center;font-size:.9em}
+.week-badge{background:var(--primary);padding:2px 11px;border-radius:20px;font-size:.78em}
+.week-days{background:#fff}
+.day-row{display:grid;grid-template-columns:105px 125px 1fr 105px 36px;padding:10px 16px;border-bottom:1px solid var(--bg);align-items:center;gap:10px;font-size:.88em}
+.day-row:last-child{border-bottom:none}
+.day-row.rest{opacity:.5}
+.day-name{font-weight:600;color:var(--secondary)}
+.run-type{padding:3px 9px;border-radius:20px;font-size:.8em;font-weight:600;text-align:center;white-space:nowrap}
+.type-easy{background:#D4EDDA;color:#155724}.type-tempo{background:#FFF3CD;color:#856404}
+.type-interval{background:#F8D7DA;color:#721C24}.type-long{background:#CCE5FF;color:#004085}
+.type-rest{background:#F8F9FA;color:var(--muted)}.type-race{background:var(--gradient);color:#fff}
+.run-distance{color:var(--muted);font-size:.86em;text-align:right}
+.run-desc{font-size:.86em;color:var(--text)}
+.log-btn{width:30px;height:30px;border-radius:50%;border:none;cursor:pointer;font-size:.9em;display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0}
+.log-btn-add{background:#e8f5e9;color:#28A745}.log-btn-add:hover{background:#28A745;color:#fff}
+.log-btn-done{background:#D4EDDA;color:#155724;cursor:default}
+.log-btn-skip{background:#fff3cd;color:#856404}.log-btn-skip:hover{background:#FFC107;color:#fff}
+
+/* PROGRESS TRACKER */
+.progress-overview{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:12px;margin-bottom:20px}
+.progress-stat{background:var(--bg);border-radius:12px;padding:14px;text-align:center;border:1px solid var(--border)}
+.progress-stat .val{font-size:1.7em;font-weight:800;color:var(--primary)}
+.progress-stat .lbl{font-size:.76em;color:var(--muted);margin-top:2px}
+.week-progress{margin-bottom:18px}
+.week-progress-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;font-size:.88em}
+.bar-wrap{background:var(--bg);border-radius:8px;height:18px;overflow:hidden;position:relative}
+.bar-planned{background:#DEE2E6;height:100%;border-radius:8px;position:absolute;top:0;left:0}
+.bar-actual{background:var(--gradient);height:100%;border-radius:8px;position:absolute;top:0;left:0;transition:width .5s}
+.bar-label{position:absolute;right:8px;top:50%;transform:translateY(-50%);font-size:.72em;font-weight:700;color:#fff;z-index:1}
+.chart-canvas{width:100%;border-radius:12px;background:var(--bg);display:block}
+.log-entry{display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:10px;align-items:center;padding:10px 14px;border-radius:10px;background:var(--bg);margin-bottom:8px;font-size:.86em}
+.streak-badge{background:linear-gradient(135deg,#FF6B35,#FFC107);color:#fff;padding:4px 14px;border-radius:20px;font-weight:700;font-size:.85em}
+.feel-dots{display:flex;gap:4px}
+.feel-dot{width:10px;height:10px;border-radius:50%;background:var(--border)}
+.feel-dot.filled{background:var(--primary)}
+
+/* PACE CALCULATOR */
+.calc-result-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-top:16px}
+.calc-card{background:var(--bg);border-radius:12px;padding:14px;border:1px solid var(--border);text-align:center}
+.calc-card .main-val{font-size:1.4em;font-weight:800;color:var(--primary)}
+.calc-card .sub-val{font-size:.82em;color:var(--muted);margin-top:3px}
+.calc-card .dist-label{font-size:.75em;font-weight:600;color:var(--secondary);margin-bottom:4px}
+.splits-table{width:100%;border-collapse:collapse;font-size:.85em;margin-top:12px}
+.splits-table th{background:var(--secondary);color:#fff;padding:8px 12px;text-align:left;font-size:.82em}
+.splits-table td{padding:7px 12px;border-bottom:1px solid var(--bg)}
+.splits-table tr:last-child td{border-bottom:none}
+.splits-table tr:nth-child(even) td{background:#F8F9FA}
+.splits-table tr.highlight td{background:#FFF3CD;font-weight:600}
+.predict-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-top:12px}
+.predict-card{background:var(--bg);border-radius:10px;padding:12px;text-align:center;border:1px solid var(--border)}
+.predict-card .p-dist{font-size:.75em;font-weight:700;color:var(--secondary)}
+.predict-card .p-time{font-size:1.1em;font-weight:800;color:var(--primary);margin-top:3px}
+.predict-card .p-pace{font-size:.77em;color:var(--muted)}
+
+/* SAVE/LOAD BANNER */
+.saved-banner{background:linear-gradient(135deg,#28A745,#20C997);color:#fff;border-radius:14px;padding:16px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:20px;flex-wrap:wrap}
+.saved-banner .sb-info{font-size:.9em;font-weight:600}
+.saved-banner .sb-meta{font-size:.79em;opacity:.85;margin-top:2px}
+
+/* MODAL */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:500;align-items:center;justify-content:center;padding:20px}
+.modal-overlay.open{display:flex}
+.modal{background:#fff;border-radius:18px;padding:28px;max-width:440px;width:100%;box-shadow:0 8px 40px rgba(0,0,0,.2);position:relative}
+.modal h3{font-size:1.1em;color:var(--secondary);margin-bottom:18px;font-weight:700}
+.modal .close-btn{position:absolute;top:14px;right:16px;background:none;border:none;cursor:pointer;font-size:1.3em;color:var(--muted)}
+.feel-selector{display:flex;gap:8px;margin-top:6px}
+.feel-opt{width:38px;height:38px;border-radius:50%;border:2px solid var(--border);background:#fff;cursor:pointer;font-size:1.1em;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.feel-opt.selected{border-color:var(--primary);background:#FFF3CD;transform:scale(1.1)}
+
+@media(max-width:600px){
+  .pr-grid{grid-template-columns:1fr}
+  .day-row{grid-template-columns:85px 110px 1fr 34px}
+  .run-distance{display:none}
+  header h1{font-size:1.55em}
+  .log-entry{grid-template-columns:1fr 1fr}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🏃 Running Schedule Planner</h1>
+  <p>สร้างตาราง · ติดตามความก้าวหน้า · คำนวณ Pace · Export ไปทุกที่</p>
+</header>
+
+<div class="nav-bar">
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="switchPage('plan')">📋 สร้างแผน</button>
+    <button class="nav-tab" onclick="switchPage('tracker')" id="tab-tracker">📈 Progress Tracker</button>
+    <button class="nav-tab" onclick="switchPage('pace')">⚡ Pace Calculator</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════ PAGE: PLAN ═══════════════════════════ -->
+<div class="page active" id="page-plan">
+
+  <!-- Saved Plan Banner -->
+  <div id="saved-banner" style="display:none">
+    <div class="saved-banner">
+      <div>
+        <div class="sb-info">💾 มีแผนที่บันทึกไว้</div>
+        <div class="sb-meta" id="saved-meta"></div>
+      </div>
+      <div style="display:flex;gap:8px;flex-shrink:0">
+        <button class="btn btn-sm" style="background:#fff;color:#28A745;border:2px solid #fff" onclick="loadSavedPlan()">โหลดแผนนี้</button>
+        <button class="btn btn-sm" style="background:rgba(255,255,255,.2);color:#fff;border:2px solid rgba(255,255,255,.4)" onclick="clearSavedPlan()">ลบทิ้ง</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PR Card -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-icon">🏆</div>
+      <div><h2>สถิติการวิ่งของคุณ (Personal Records)</h2>
+      <p>ใส่เวลาที่ดีที่สุด หรือเวลาที่คาดว่าจะจบ หากยังไม่เคยวิ่งระยะนั้น</p></div>
+    </div>
+    <div class="pr-grid">
+      <div class="pr-card">
+        <div class="distance-label"><span class="distance-badge">5 KM</span>Personal Best</div>
+        <div class="time-input-group">
+          <input type="number" id="pr5k_h" placeholder="HH" min="0" max="2" value="0">
+          <span>:</span><input type="number" id="pr5k_m" placeholder="MM" min="0" max="59">
+          <span>:</span><input type="number" id="pr5k_s" placeholder="SS" min="0" max="59">
+        </div>
+        <small style="color:var(--muted);margin-top:6px;display:block">ตัวอย่าง: 0:25:00 = 25 นาที</small>
+      </div>
+      <div class="pr-card">
+        <div class="distance-label"><span class="distance-badge">10 KM</span>Personal Best</div>
+        <div class="time-input-group">
+          <input type="number" id="pr10k_h" placeholder="HH" min="0" max="2" value="0">
+          <span>:</span><input type="number" id="pr10k_m" placeholder="MM" min="0" max="59">
+          <span>:</span><input type="number" id="pr10k_s" placeholder="SS" min="0" max="59">
+        </div>
+      </div>
+      <div class="pr-card">
+        <div class="distance-label"><span class="distance-badge">21.1 KM</span>Half Marathon</div>
+        <div class="time-input-group">
+          <input type="number" id="prhalf_h" placeholder="HH" min="0" max="5" value="2">
+          <span>:</span><input type="number" id="prhalf_m" placeholder="MM" min="0" max="59" value="0">
+          <span>:</span><input type="number" id="prhalf_s" placeholder="SS" min="0" max="59" value="0">
+        </div>
+      </div>
+      <div class="pr-card">
+        <div class="distance-label"><span class="distance-badge">42.2 KM</span>Full Marathon</div>
+        <div class="time-input-group">
+          <input type="number" id="prfull_h" placeholder="HH" min="0" max="10" value="4">
+          <span>:</span><input type="number" id="prfull_m" placeholder="MM" min="0" max="59" value="30">
+          <span>:</span><input type="number" id="prfull_s" placeholder="SS" min="0" max="59" value="0">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Goal Card -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-icon">🎯</div>
+      <div><h2>เป้าหมายการแข่งขัน</h2><p>ระบุระยะทาง เวลาเป้าหมาย และวันแข่ง</p></div>
+    </div>
+    <div class="form-grid">
+      <div class="form-group">
+        <label>ระยะทางที่ต้องการวิ่ง</label>
+        <select id="goal_distance">
+          <option value="5">5 KM</option>
+          <option value="10">10 KM</option>
+          <option value="21.1" selected>Half Marathon (21.1 KM)</option>
+          <option value="42.2">Full Marathon (42.2 KM)</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>วันที่แข่งขัน</label>
+        <input type="date" id="race_date">
+      </div>
+    </div>
+    <div class="section-divider"></div>
+    <div class="form-group">
+      <label>เวลาเป้าหมาย (Goal Time)</label>
+      <div class="time-input-group" style="max-width:260px">
+        <input type="number" id="goal_h" placeholder="HH" min="0" max="10">
+        <span>:</span><input type="number" id="goal_m" placeholder="MM" min="0" max="59">
+        <span>:</span><input type="number" id="goal_s" placeholder="SS" min="0" max="59">
+      </div>
+      <small>เว้นว่างหากต้องการให้ระบบคำนวณจากสถิติของคุณ</small>
+    </div>
+  </div>
+
+  <!-- Training Pref Card -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-icon">📅</div>
+      <div><h2>ตั้งค่าตารางการฝึกซ้อม</h2><p>กำหนดวัน เวลา และความถี่ที่ต้องการวิ่ง</p></div>
+    </div>
+    <div class="form-group" style="margin-bottom:18px">
+      <label>เลือกวันที่ต้องการวิ่ง</label>
+      <div class="days-selector" id="days-selector">
+        <button class="day-toggle active" data-day="1" onclick="toggleDay(this)">จ</button>
+        <button class="day-toggle" data-day="2" onclick="toggleDay(this)">อ</button>
+        <button class="day-toggle active" data-day="3" onclick="toggleDay(this)">พ</button>
+        <button class="day-toggle" data-day="4" onclick="toggleDay(this)">พฤ</button>
+        <button class="day-toggle active" data-day="5" onclick="toggleDay(this)">ศ</button>
+        <button class="day-toggle" data-day="6" onclick="toggleDay(this)">ส</button>
+        <button class="day-toggle active" data-day="0" onclick="toggleDay(this)">อา</button>
+      </div>
+      <small id="days-count">เลือกแล้ว: 4 วัน/สัปดาห์</small>
+    </div>
+    <div class="form-grid">
+      <div class="form-group">
+        <label>ช่วงเวลาที่ต้องการวิ่ง</label>
+        <select id="run_period"><option value="morning">เช้า (Morning)</option><option value="evening">เย็น (Evening)</option></select>
+      </div>
+      <div class="form-group">
+        <label>เวลาที่ต้องการวิ่ง</label>
+        <input type="time" id="run_time" value="06:00">
+      </div>
+      <div class="form-group">
+        <label>ระดับประสบการณ์</label>
+        <select id="experience">
+          <option value="beginner">มือใหม่ (Beginner)</option>
+          <option value="intermediate" selected>กลาง (Intermediate)</option>
+          <option value="advanced">ขั้นสูง (Advanced)</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>วันที่เริ่มซ้อม</label>
+        <input type="date" id="start_date">
+      </div>
+    </div>
+  </div>
+
+  <div style="text-align:center;margin:28px 0">
+    <button class="btn btn-primary" style="font-size:1.05em;padding:15px 44px" onclick="generateSchedule()">
+      ✨ สร้างตารางการวิ่ง
+    </button>
+  </div>
+
+  <!-- Result -->
+  <div id="result-section" style="display:none">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon">📊</div>
+        <div><h2 id="plan-title">แผนการฝึกซ้อม</h2><p id="plan-subtitle"></p></div>
+      </div>
+      <div class="stats-grid" id="stats-grid"></div>
+      <div id="pace-guide-section">
+        <h3 style="font-size:.93em;font-weight:700;color:var(--secondary);margin-bottom:10px">🏃 Pace Guide ของคุณ</h3>
+        <div class="pace-guide" id="pace-guide"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon">🗓️</div>
+        <div><h2>ตารางการฝึกซ้อมรายสัปดาห์</h2><p>กด ✚ เพื่อบันทึกผลการวิ่ง</p></div>
+      </div>
+      <div id="schedule-container"></div>
+      <div class="section-divider"></div>
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:14px">
+        <h3 style="font-size:.97em;font-weight:700;color:var(--secondary)">📥 Export ตารางของคุณ</h3>
+        <button class="btn btn-sm" style="background:linear-gradient(135deg,#28A745,#20C997);color:#fff" onclick="savePlan()">💾 บันทึกแผนนี้</button>
+      </div>
+      <div class="action-buttons">
+        <button class="btn btn-success" onclick="exportExcel()">📊 Download Excel</button>
+        <button class="btn btn-info" onclick="exportPDF()">📄 Download PDF Guide</button>
+        <button class="btn btn-google" onclick="exportGoogleCalendar()">📅 Google Calendar (.ics)</button>
+      </div>
+      <div class="alert alert-info" style="margin-top:14px">
+        <strong>วิธีใช้ Google Calendar:</strong> ดาวน์โหลดไฟล์ .ics แล้วนำเข้า Google Calendar → Settings → Import & Export → Import
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════ PAGE: TRACKER ═══════════════════════════ -->
+<div class="page" id="page-tracker">
+  <div id="tracker-no-plan" class="card" style="text-align:center;padding:40px 20px">
+    <div style="font-size:3em;margin-bottom:12px">📋</div>
+    <h3 style="color:var(--secondary);margin-bottom:8px">ยังไม่มีแผนการวิ่ง</h3>
+    <p style="color:var(--muted);margin-bottom:18px">ไปที่แท็บ "สร้างแผน" เพื่อสร้างตารางการวิ่งก่อน</p>
+    <button class="btn btn-primary" onclick="switchPage('plan')">ไปสร้างแผน →</button>
+  </div>
+  <div id="tracker-content" style="display:none">
+    <!-- Overview stats -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon">📈</div>
+        <div><h2>ภาพรวมความก้าวหน้า</h2><p id="tracker-plan-label"></p></div>
+      </div>
+      <div class="progress-overview" id="tracker-overview"></div>
+      <div id="streak-row" style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+        <span style="font-size:.88em;color:var(--muted)">Streak ต่อเนื่อง:</span>
+        <span class="streak-badge" id="streak-val">0 วัน 🔥</span>
+      </div>
+      <!-- Bar chart -->
+      <h3 style="font-size:.92em;font-weight:700;color:var(--secondary);margin-bottom:12px">KM แผน vs จริง รายสัปดาห์</h3>
+      <canvas id="chart-canvas" class="chart-canvas" height="180"></canvas>
+    </div>
+
+    <!-- Weekly log list -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon">📝</div>
+        <div><h2>บันทึกการวิ่ง</h2><p>แสดงเฉพาะสัปดาห์ที่ผ่านมาและสัปดาห์ปัจจุบัน</p></div>
+      </div>
+      <div id="tracker-log-list"></div>
+    </div>
+
+    <!-- Recent logs -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon">🏅</div>
+        <div><h2>ประวัติการวิ่งล่าสุด</h2><p>10 ครั้งล่าสุดที่บันทึกไว้</p></div>
+      </div>
+      <div id="recent-logs"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════ PAGE: PACE CALC ═══════════════════════════ -->
+<div class="page" id="page-pace">
+  <div class="card">
+    <div class="card-header">
+      <div class="card-icon">⚡</div>
+      <div><h2>Pace Calculator</h2><p>คำนวณ Pace, Split, และเวลาที่คาดว่าจะจบในทุกระยะ</p></div>
+    </div>
+    <div class="form-grid">
+      <div class="form-group">
+        <label>ระยะทางที่วิ่ง</label>
+        <select id="calc_dist" onchange="calcPace()">
+          <option value="1">1 KM</option>
+          <option value="5">5 KM</option>
+          <option value="10">10 KM</option>
+          <option value="21.1" selected>Half Marathon (21.1 KM)</option>
+          <option value="42.2">Full Marathon (42.2 KM)</option>
+          <option value="custom">กำหนดเอง</option>
+        </select>
+      </div>
+      <div class="form-group" id="custom-dist-group" style="display:none">
+        <label>ระยะทาง (km)</label>
+        <input type="number" id="calc_custom_dist" placeholder="เช่น 15" min="0.1" step="0.1" oninput="calcPace()">
+      </div>
+      <div class="form-group">
+        <label>เวลาเป้าหมาย</label>
+        <div class="time-input-group">
+          <input type="number" id="calc_h" placeholder="HH" min="0" max="24" value="2" oninput="calcPace()">
+          <span>:</span><input type="number" id="calc_m" placeholder="MM" min="0" max="59" value="0" oninput="calcPace()">
+          <span>:</span><input type="number" id="calc_s" placeholder="SS" min="0" max="59" value="0" oninput="calcPace()">
+        </div>
+      </div>
+    </div>
+    <div id="calc-results" style="display:none">
+      <div class="section-divider"></div>
+      <div class="calc-result-grid" id="calc-main-results"></div>
+      <div class="section-divider"></div>
+      <h3 style="font-size:.93em;font-weight:700;color:var(--secondary);margin-bottom:6px">🏃 Race Predictions (Riegel's Formula)</h3>
+      <p style="font-size:.8em;color:var(--muted);margin-bottom:10px">ถ้าวิ่งระยะนี้ได้ตามเป้า จะวิ่งระยะอื่นได้เวลาประมาณ</p>
+      <div class="predict-grid" id="calc-predictions"></div>
+      <div class="section-divider"></div>
+      <h3 style="font-size:.93em;font-weight:700;color:var(--secondary);margin-bottom:6px">📊 Split Table</h3>
+      <p style="font-size:.8em;color:var(--muted);margin-bottom:8px">เวลาสะสมแบบ Even Pace</p>
+      <div style="overflow-x:auto"><table class="splits-table" id="splits-table"></table></div>
+    </div>
+  </div>
+
+  <!-- Training Zones from Pace -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-icon">🎯</div>
+      <div><h2>Training Zones จาก Pace</h2><p>คำนวณ Zone ต่างๆ จากเวลาที่ใส่ด้านบน</p></div>
+    </div>
+    <div id="zones-from-calc">
+      <div class="alert alert-info">ใส่ระยะทางและเวลาเป้าหมายด้านบนเพื่อดู Training Zones</div>
+    </div>
+  </div>
+</div>
+
+<!-- LOG MODAL -->
+<div class="modal-overlay" id="log-modal">
+  <div class="modal">
+    <button class="close-btn" onclick="closeLogModal()">✕</button>
+    <h3 id="modal-title">บันทึกผลการวิ่ง</h3>
+    <input type="hidden" id="modal-run-key">
+    <div style="display:flex;flex-direction:column;gap:14px">
+      <div class="form-group">
+        <label>ระยะที่วิ่งได้จริง (km)</label>
+        <input type="number" id="log-km" placeholder="เช่น 10.2" step="0.1" min="0">
+      </div>
+      <div class="form-group">
+        <label>เวลาที่ใช้จริง</label>
+        <div class="time-input-group">
+          <input type="number" id="log-h" placeholder="HH" min="0" max="10">
+          <span>:</span><input type="number" id="log-m" placeholder="MM" min="0" max="59">
+          <span>:</span><input type="number" id="log-s" placeholder="SS" min="0" max="59">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>ความรู้สึก</label>
+        <div class="feel-selector">
+          <button class="feel-opt" data-feel="1" onclick="selectFeel(this)">😫</button>
+          <button class="feel-opt" data-feel="2" onclick="selectFeel(this)">😕</button>
+          <button class="feel-opt" data-feel="3" onclick="selectFeel(this)">😐</button>
+          <button class="feel-opt" data-feel="4" onclick="selectFeel(this)">😊</button>
+          <button class="feel-opt" data-feel="5" onclick="selectFeel(this)">🔥</button>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>บันทึกเพิ่มเติม</label>
+        <input type="text" id="log-note" placeholder="เช่น เส้นทาง, สภาพอากาศ...">
+      </div>
+      <div style="display:flex;gap:10px">
+        <button class="btn btn-primary" style="flex:1" onclick="saveLogEntry()">💾 บันทึก</button>
+        <button class="btn btn-warn btn-sm" onclick="markSkipped()">ข้ามวันนี้</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ═══════════ STATE ═══════════ */
+let scheduleData = null;
+let selectedDays = [1,3,5,0];
+let runLogs = {};      // key: "YYYY-MM-DD" → {km, secs, feel, note, status: 'done'|'skip'}
+let selectedFeel = 3;
+
+/* ═══════════ NAV ═══════════ */
+function switchPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  document.querySelectorAll('.nav-tab')[['plan','tracker','pace'].indexOf(id)].classList.add('active');
+  if (id === 'tracker') renderTracker();
+  if (id === 'pace') calcPace();
+}
+
+/* ═══════════ HELPERS ═══════════ */
+function timeToSec(h,m,s){return (parseInt(h)||0)*3600+(parseInt(m)||0)*60+(parseInt(s)||0)}
+function secToTime(t){
+  if(!t||t<=0)return '--:--:--';
+  const h=Math.floor(t/3600),m=Math.floor((t%3600)/60),s=Math.floor(t%60);
+  if(h>0)return `${h}:${pad(m)}:${pad(s)}`;
+  return `${m}:${pad(s)}`;
+}
+function secToPace(s){if(!s||s<=0)return '--:--';const m=Math.floor(s/60);return `${m}:${pad(Math.floor(s%60))}`}
+function pad(n){return String(n).padStart(2,'0')}
+function estimateTime(prS,prD,tD){if(!prS||prS<=0)return null;return prS*Math.pow(tD/prD,1.06)}
+function dateKey(d){return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`}
+function toggleDay(btn){
+  const day=parseInt(btn.dataset.day);
+  btn.classList.toggle('active');
+  if(btn.classList.contains('active')){if(!selectedDays.includes(day))selectedDays.push(day)}
+  else{selectedDays=selectedDays.filter(d=>d!==day)}
+  document.getElementById('days-count').textContent=`เลือกแล้ว: ${selectedDays.length} วัน/สัปดาห์`;
+}
+function getPaceZones(rp){return{easy:rp*1.25,tempo:rp*1.05,interval:rp*0.95,long:rp*1.30}}
+function getWeeksNeeded(d,exp){
+  const base={5:8,10:10,21.1:14,42.2:18};
+  const e={beginner:1.3,intermediate:1.0,advanced:0.85};
+  return Math.round(base[d]*e[exp]);
+}
+function getRunType(week,total,dayIdx,daysPerWeek){
+  const pct=week/total;
+  if(week>=total-1)return{type:'easy',label:'Easy Run',desc:'Light taper run - reduce volume before race'};
+  if(dayIdx===daysPerWeek-1)return{type:'long',label:'Long Run',desc:'Build endurance at conversational pace'};
+  if(pct>0.3&&(dayIdx===0||dayIdx===Math.floor(daysPerWeek/2))){
+    if(week%3===0)return{type:'interval',label:'Intervals',desc:'400-800m x 4-6 reps faster than Race Pace'};
+    return{type:'tempo',label:'Tempo Run',desc:'Lactate threshold pace, 20-40 min sustained effort'};
+  }
+  return{type:'easy',label:'Easy Run',desc:'Conversational pace, aerobic base building'};
+}
+function getRunKm(type,week,total,dist){
+  const pct=week/total,deload=week%4===3,m=deload?0.7:1.0;
+  if(type==='long'){
+    if(dist<=5)return Math.min(8,4+pct*4)*m;
+    if(dist<=10)return Math.min(14,6+pct*8)*m;
+    if(dist<=21.1)return Math.min(20,8+pct*12)*m;
+    return Math.min(34,12+pct*22)*m;
+  }
+  if(type==='tempo'){
+    if(dist<=5)return(3+pct*3)*m;
+    if(dist<=10)return(5+pct*5)*m;
+    if(dist<=21.1)return(6+pct*7)*m;
+    return(8+pct*10)*m;
+  }
+  if(type==='interval')return dist<=10?5:8;
+  if(dist<=5)return(3+pct*3)*m;
+  if(dist<=10)return(5+pct*4)*m;
+  if(dist<=21.1)return(6+pct*5)*m;
+  return(8+pct*8)*m;
+}
+
+const DAY_TH=['อาทิตย์','จันทร์','อังคาร','พุธ','พฤหัสบดี','ศุกร์','เสาร์'];
+const DAY_EN=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+
+/* ═══════════ GENERATE ═══════════ */
+function generateSchedule(){
+  const dist=parseFloat(document.getElementById('goal_distance').value);
+  const raceDateStr=document.getElementById('race_date').value;
+  const startDateStr=document.getElementById('start_date').value;
+  const experience=document.getElementById('experience').value;
+  const runPeriod=document.getElementById('run_period').value;
+  const runTime=document.getElementById('run_time').value;
+  if(selectedDays.length<2){alert('กรุณาเลือกอย่างน้อย 2 วันต่อสัปดาห์');return}
+
+  const pr5k=timeToSec(document.getElementById('pr5k_h').value,document.getElementById('pr5k_m').value,document.getElementById('pr5k_s').value);
+  const pr10k=timeToSec(document.getElementById('pr10k_h').value,document.getElementById('pr10k_m').value,document.getElementById('pr10k_s').value);
+  const prhalf=timeToSec(document.getElementById('prhalf_h').value,document.getElementById('prhalf_m').value,document.getElementById('prhalf_s').value);
+  const prfull=timeToSec(document.getElementById('prfull_h').value,document.getElementById('prfull_m').value,document.getElementById('prfull_s').value);
+
+  let goalTime=timeToSec(document.getElementById('goal_h').value,document.getElementById('goal_m').value,document.getElementById('goal_s').value);
+  if(!goalTime){
+    const est=[];
+    if(pr5k>0)est.push(estimateTime(pr5k,5,dist));
+    if(pr10k>0)est.push(estimateTime(pr10k,10,dist));
+    if(prhalf>0)est.push(estimateTime(prhalf,21.1,dist));
+    if(prfull>0)est.push(estimateTime(prfull,42.2,dist));
+    if(est.length>0)goalTime=Math.min(...est.filter(Boolean));
+  }
+  const defaults={5:1800,10:3600,21.1:7200,42.2:16200};
+  if(!goalTime)goalTime=defaults[dist];
+
+  const racePace=goalTime/dist;
+  const zones=getPaceZones(racePace);
+  const startDate=startDateStr?new Date(startDateStr):new Date();
+  const raceDate=raceDateStr?new Date(raceDateStr):null;
+  const weeksNeeded=getWeeksNeeded(dist,experience);
+  const totalWeeks=raceDate?Math.max(4,Math.floor((raceDate-startDate)/(7*86400000))):weeksNeeded;
+  const sortedDays=[...selectedDays].sort((a,b)=>[1,2,3,4,5,6,0].indexOf(a)-[1,2,3,4,5,6,0].indexOf(b));
+
+  let cur=new Date(startDate);
+  const fd=sortedDays[0]===0?7:sortedDays[0];
+  const cd=cur.getDay()===0?7:cur.getDay();
+  cur.setDate(cur.getDate()+(fd-cd+7)%7);
+
+  const weeks=[];
+  for(let w=0;w<totalWeeks;w++){
+    const isDeload=(w+1)%4===0,isRace=w===totalWeeks-1;
+    const ws=new Date(cur);
+    const days=[];
+    for(let d=0;d<7;d++){
+      const dd=new Date(ws);dd.setDate(ws.getDate()+d);
+      const dow=dd.getDay();
+      if(sortedDays.includes(dow)){
+        const di=sortedDays.indexOf(dow);
+        let type,label,desc,km;
+        if(isRace&&di===sortedDays.length-1&&raceDate){
+          type='race';label='RACE DAY! 🏁';
+          desc=`${dist<=10?dist+' KM Race':dist===21.1?'Half Marathon':'Full Marathon'} - Goal: ${secToTime(goalTime)}`;
+          km=dist;
+        } else {
+          const rt=getRunType(w,totalWeeks,di,sortedDays.length);
+          type=rt.type;label=rt.label;desc=rt.desc;
+          km=Math.round(getRunKm(type,w,totalWeeks,dist)*10)/10;
+          if(isDeload)km=Math.round(km*0.75*10)/10;
+        }
+        let p=zones.easy;
+        if(type==='tempo')p=zones.tempo;
+        else if(type==='interval')p=zones.interval;
+        else if(type==='long')p=zones.long;
+        else if(type==='race')p=racePace;
+        days.push({date:new Date(dd),dow,type,label,desc,km,pace:secToPace(p),time:runTime,period:runPeriod});
+      } else {
+        days.push({date:new Date(dd),dow,type:'rest',label:'Rest / Cross-Training',desc:'Rest day or light cross-training (swim, cycling)',km:0,pace:'-',time:'-',period:'-'});
+      }
+    }
+    const totalKm=Math.round(days.reduce((s,d)=>s+d.km,0)*10)/10;
+    weeks.push({weekNum:w+1,start:new Date(ws),days,totalKm,isDeload,isRaceWeek:isRace});
+    cur.setDate(cur.getDate()+7);
+  }
+
+  scheduleData={dist,goalTime,racePace,zones,experience,runPeriod,runTime,selectedDays,sortedDays,totalWeeks,startDate,raceDate,weeks,pr:{pr5k,pr10k,prhalf,prfull},totalKm:Math.round(weeks.reduce((s,w)=>s+w.totalKm,0)*10)/10,createdAt:new Date().toISOString()};
+  renderSchedule();
+}
+
+/* ═══════════ RENDER SCHEDULE ═══════════ */
+function renderSchedule(){
+  const sd=scheduleData;
+  document.getElementById('result-section').style.display='block';
+  const dl=sd.dist<=5?'5 KM':sd.dist<=10?'10 KM':sd.dist<=21.1?'Half Marathon':'Full Marathon';
+  document.getElementById('plan-title').textContent=`แผน ${dl} — เป้าหมาย ${secToTime(sd.goalTime)}`;
+  document.getElementById('plan-subtitle').textContent=`${sd.totalWeeks} สัปดาห์ | ${sd.selectedDays.length} วัน/สัปดาห์ | เริ่ม ${sd.startDate.toLocaleDateString('th-TH')}`;
+
+  document.getElementById('stats-grid').innerHTML=`
+    <div class="stat-card"><div class="stat-value">${sd.totalWeeks}</div><div class="stat-label">สัปดาห์</div></div>
+    <div class="stat-card"><div class="stat-value">${sd.selectedDays.length}</div><div class="stat-label">วัน/สัปดาห์</div></div>
+    <div class="stat-card"><div class="stat-value">${Math.round(sd.totalKm)}</div><div class="stat-label">KM รวม</div></div>
+    <div class="stat-card"><div class="stat-value">${secToTime(sd.goalTime)}</div><div class="stat-label">เป้าหมาย</div></div>
+    <div class="stat-card"><div class="stat-value">${secToPace(sd.racePace)}</div><div class="stat-label">Race Pace</div></div>`;
+
+  document.getElementById('pace-guide').innerHTML=`
+    <div class="pace-item"><div class="pace-label">🟢 Easy Run</div><div class="pace-value">${secToPace(sd.zones.easy)} /km</div></div>
+    <div class="pace-item tempo"><div class="pace-label">🟡 Tempo Run</div><div class="pace-value">${secToPace(sd.zones.tempo)} /km</div></div>
+    <div class="pace-item interval"><div class="pace-label">🔴 Intervals</div><div class="pace-value">${secToPace(sd.zones.interval)} /km</div></div>
+    <div class="pace-item long"><div class="pace-label">🔵 Long Run</div><div class="pace-value">${secToPace(sd.zones.long)} /km</div></div>`;
+
+  let html='';
+  sd.weeks.forEach(week=>{
+    const wl=week.isRaceWeek?'🏁 Race Week':week.isDeload?'💤 Recovery Week':`สัปดาห์ที่ ${week.weekNum}`;
+    const end=new Date(week.start.getTime()+6*86400000);
+    const dr=`${week.start.toLocaleDateString('th-TH',{day:'numeric',month:'short'})} — ${end.toLocaleDateString('th-TH',{day:'numeric',month:'short'})}`;
+    html+=`<div class="schedule-week"><div class="week-header"><span>${wl} <small style="opacity:.7;font-weight:400">${dr}</small></span><span class="week-badge">${week.totalKm} km</span></div><div class="week-days">`;
+    week.days.forEach(day=>{
+      const key=dateKey(day.date);
+      const log=runLogs[key];
+      const isRest=day.type==='rest';
+      let logBtn='';
+      if(!isRest){
+        if(log&&log.status==='done')logBtn=`<button class="log-btn log-btn-done" title="วิ่งแล้ว ${log.km}km">✓</button>`;
+        else if(log&&log.status==='skip')logBtn=`<button class="log-btn log-btn-skip" title="ข้ามวันนี้" onclick="openLogModal('${key}',${day.km},'${day.label}')">⤼</button>`;
+        else logBtn=`<button class="log-btn log-btn-add" title="บันทึกผล" onclick="openLogModal('${key}',${day.km},'${day.label}')">+</button>`;
+      }
+      const km=day.km>0?`${day.km}km`:'';
+      const p=day.pace!=='-'?`@ ${day.pace}/km`:'';
+      html+=`<div class="day-row${isRest?' rest':''}">
+        <div class="day-name">${DAY_TH[day.dow]}<br><small style="font-weight:400;color:var(--muted)">${day.date.toLocaleDateString('th-TH',{day:'numeric',month:'short'})}</small></div>
+        <div><span class="run-type type-${day.type}">${day.label}</span></div>
+        <div class="run-desc">${day.desc}</div>
+        <div class="run-distance">${km}<br><small>${p}</small></div>
+        ${logBtn||'<div></div>'}
+      </div>`;
+    });
+    html+=`</div></div>`;
+  });
+  document.getElementById('schedule-container').innerHTML=html;
+  document.getElementById('result-section').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+/* ═══════════ LOG MODAL ═══════════ */
+function openLogModal(key,plannedKm,label){
+  document.getElementById('modal-run-key').value=key;
+  document.getElementById('modal-title').textContent=`บันทึกผล: ${label}`;
+  document.getElementById('log-km').value=plannedKm||'';
+  document.getElementById('log-h').value='';document.getElementById('log-m').value='';document.getElementById('log-s').value='';
+  document.getElementById('log-note').value='';
+  selectedFeel=3;
+  document.querySelectorAll('.feel-opt').forEach(b=>{b.classList.remove('selected');if(parseInt(b.dataset.feel)===3)b.classList.add('selected')});
+  const existing=runLogs[key];
+  if(existing&&existing.status==='done'){
+    document.getElementById('log-km').value=existing.km;
+    const h=Math.floor(existing.secs/3600),m=Math.floor((existing.secs%3600)/60),s=existing.secs%60;
+    document.getElementById('log-h').value=h;document.getElementById('log-m').value=m;document.getElementById('log-s').value=s;
+    document.getElementById('log-note').value=existing.note||'';
+    selectedFeel=existing.feel||3;
+    document.querySelectorAll('.feel-opt').forEach(b=>{b.classList.remove('selected');if(parseInt(b.dataset.feel)===selectedFeel)b.classList.add('selected')});
+  }
+  document.getElementById('log-modal').classList.add('open');
+}
+function closeLogModal(){document.getElementById('log-modal').classList.remove('open')}
+function selectFeel(btn){selectedFeel=parseInt(btn.dataset.feel);document.querySelectorAll('.feel-opt').forEach(b=>b.classList.remove('selected'));btn.classList.add('selected')}
+
+function saveLogEntry(){
+  const key=document.getElementById('modal-run-key').value;
+  const km=parseFloat(document.getElementById('log-km').value)||0;
+  const secs=timeToSec(document.getElementById('log-h').value,document.getElementById('log-m').value,document.getElementById('log-s').value);
+  const note=document.getElementById('log-note').value.trim();
+  runLogs[key]={km,secs,feel:selectedFeel,note,status:'done',loggedAt:new Date().toISOString()};
+  persistLogs();closeLogModal();
+  if(scheduleData)renderSchedule();
+  showToast('บันทึกเรียบร้อย! 🎉');
+}
+function markSkipped(){
+  const key=document.getElementById('modal-run-key').value;
+  runLogs[key]={status:'skip',loggedAt:new Date().toISOString()};
+  persistLogs();closeLogModal();
+  if(scheduleData)renderSchedule();
+}
+
+/* ═══════════ TRACKER ═══════════ */
+function renderTracker(){
+  if(!scheduleData){
+    document.getElementById('tracker-no-plan').style.display='';
+    document.getElementById('tracker-content').style.display='none';
+    return;
+  }
+  document.getElementById('tracker-no-plan').style.display='none';
+  document.getElementById('tracker-content').style.display='';
+  const sd=scheduleData;
+  const dl=sd.dist<=5?'5 KM':sd.dist<=10?'10 KM':sd.dist<=21.1?'Half Marathon':'Full Marathon';
+  document.getElementById('tracker-plan-label').textContent=`แผน ${dl} — เป้าหมาย ${secToTime(sd.goalTime)}`;
+
+  const today=new Date();today.setHours(0,0,0,0);
+
+  let totalPlanned=0,totalActual=0,runsDone=0,runsPlanned=0,totalActualKm=0;
+  let streak=0,bestStreak=0,curStreak=0;
+  const allRunDates=[];
+
+  sd.weeks.forEach(w=>{
+    w.days.forEach(d=>{
+      if(d.type==='rest')return;
+      const dd=new Date(d.date);dd.setHours(0,0,0,0);
+      if(dd<=today){
+        runsPlanned++;totalPlanned+=d.km;
+        const log=runLogs[dateKey(d.date)];
+        if(log&&log.status==='done'){runsDone++;totalActual+=d.km;totalActualKm+=log.km;allRunDates.push(dateKey(d.date))}
+      }
+    });
+  });
+
+  // Calculate streak
+  const sortedRunDates=allRunDates.sort();
+  if(sortedRunDates.length>0){
+    let prev=null;curStreak=0;
+    sortedRunDates.forEach(dk=>{
+      const cur=new Date(dk);cur.setHours(0,0,0,0);
+      if(prev){
+        const diff=(cur-prev)/(86400000);
+        if(diff<=7)curStreak++;else curStreak=1;
+      } else curStreak=1;
+      if(curStreak>bestStreak)bestStreak=curStreak;
+      prev=cur;
+    });
+    // Check if streak is current
+    const lastRunDate=new Date(sortedRunDates[sortedRunDates.length-1]);
+    lastRunDate.setHours(0,0,0,0);
+    const daysSinceLast=(today-lastRunDate)/86400000;
+    streak=daysSinceLast<=7?curStreak:0;
+  }
+
+  const compPct=runsPlanned>0?Math.round(runsDone/runsPlanned*100):0;
+  const totalWeeksElapsed=Math.ceil((today-new Date(sd.startDate))/86400000/7);
+  const weeksPct=Math.round(Math.min(100,totalWeeksElapsed/sd.totalWeeks*100));
+
+  document.getElementById('tracker-overview').innerHTML=`
+    <div class="progress-stat"><div class="val">${compPct}%</div><div class="lbl">Completion Rate</div></div>
+    <div class="progress-stat"><div class="val">${runsDone}/${runsPlanned}</div><div class="lbl">Sessions Done</div></div>
+    <div class="progress-stat"><div class="val">${Math.round(totalActualKm)}</div><div class="lbl">KM จริง</div></div>
+    <div class="progress-stat"><div class="val">${Math.round(totalActual)}</div><div class="lbl">KM ตามแผน</div></div>
+    <div class="progress-stat"><div class="val">${weeksPct}%</div><div class="lbl">เวลาผ่านไป</div></div>`;
+
+  document.getElementById('streak-val').textContent=`${streak} วัน 🔥 (Best: ${bestStreak})`;
+
+  // Draw chart
+  drawChart();
+
+  // Log list (current + past weeks)
+  const curWeekStart=new Date(today);curWeekStart.setDate(today.getDate()-today.getDay());
+  let logHtml='';
+  const recentWeeks=sd.weeks.filter(w=>{
+    const we=new Date(w.start.getTime()+6*86400000);
+    return we>=new Date(curWeekStart.getTime()-21*86400000)&&w.start<=new Date(today.getTime()+7*86400000);
+  });
+
+  recentWeeks.forEach(w=>{
+    const wl=w.isRaceWeek?'🏁 Race Week':w.isDeload?'💤 Recovery Week':`สัปดาห์ที่ ${w.weekNum}`;
+    const runDays=w.days.filter(d=>d.type!=='rest');
+    if(runDays.length===0)return;
+    logHtml+=`<div style="margin-bottom:16px"><div style="font-weight:700;color:var(--secondary);margin-bottom:8px;font-size:.9em">${wl} <span style="color:var(--muted);font-weight:400">(${w.totalKm} km planned)</span></div>`;
+    runDays.forEach(d=>{
+      const key=dateKey(d.date);const log=runLogs[key];
+      const isPast=new Date(d.date)<=today;
+      let statusHtml='';
+      if(log&&log.status==='done'){
+        const pace=log.secs>0&&log.km>0?secToPace(log.secs/log.km):'?';
+        statusHtml=`<span style="color:var(--success);font-weight:700">✓ ${log.km}km @ ${pace}/km</span>`;
+      } else if(log&&log.status==='skip'){
+        statusHtml=`<span style="color:#856404">⤼ ข้ามวัน</span>`;
+      } else if(isPast){
+        statusHtml=`<span style="color:#DC3545">✗ ไม่ได้บันทึก</span>`;
+      } else {
+        statusHtml=`<span style="color:var(--muted)">— กำลังจะมาถึง</span>`;
+      }
+      logHtml+=`<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;border-radius:8px;background:var(--bg);margin-bottom:6px;gap:10px;font-size:.85em">
+        <span style="font-weight:600;color:var(--secondary);min-width:60px">${DAY_TH[d.dow]}</span>
+        <span style="flex:1"><span class="run-type type-${d.type}" style="font-size:.78em">${d.label}</span></span>
+        <span>${d.km} km</span>
+        <span>${statusHtml}</span>
+        ${isPast&&(!log||log.status!=='done')?`<button class="btn btn-sm btn-success" style="padding:5px 10px" onclick="openLogModal('${key}',${d.km},'${d.label}')">Log</button>`:''}
+      </div>`;
+    });
+    logHtml+='</div>';
+  });
+  document.getElementById('tracker-log-list').innerHTML=logHtml||'<div class="alert alert-info">ยังไม่มีข้อมูลสัปดาห์นี้</div>';
+
+  // Recent logs
+  const allLogs=Object.entries(runLogs).filter(([,v])=>v.status==='done').sort((a,b)=>b[0].localeCompare(a[0])).slice(0,10);
+  let recentHtml='';
+  if(allLogs.length===0){recentHtml='<div class="alert alert-info">ยังไม่มีประวัติการวิ่ง — กด ✚ ในตารางเพื่อบันทึกผล</div>'}
+  else{
+    allLogs.forEach(([key,log])=>{
+      const pace=log.secs>0&&log.km>0?secToPace(log.secs/log.km):'?';
+      const feels=['','😫','😕','😐','😊','🔥'];
+      recentHtml+=`<div class="log-entry">
+        <span><strong>${key}</strong><br><small style="color:var(--muted)">${log.note||'-'}</small></span>
+        <span><strong>${log.km} km</strong><br><small style="color:var(--muted)">${secToTime(log.secs)}</small></span>
+        <span><strong>${pace} /km</strong><br><small style="color:var(--muted)">Pace</small></span>
+        <span style="font-size:1.4em">${feels[log.feel||3]}</span>
+      </div>`;
+    });
+  }
+  document.getElementById('recent-logs').innerHTML=recentHtml;
+}
+
+function drawChart(){
+  const canvas=document.getElementById('chart-canvas');
+  if(!canvas||!scheduleData)return;
+  const sd=scheduleData;
+  const ctx=canvas.getContext('2d');
+  const dpr=window.devicePixelRatio||1;
+  const rect=canvas.getBoundingClientRect();
+  canvas.width=rect.width*dpr||600;canvas.height=180*dpr;
+  ctx.scale(dpr,dpr);
+  const W=rect.width||600,H=180;
+  ctx.clearRect(0,0,W,H);
+
+  const today=new Date();today.setHours(0,0,0,0);
+  const showWeeks=sd.weeks.slice(0,Math.min(sd.weeks.length,20));
+  const maxKm=Math.max(...showWeeks.map(w=>{
+    const actual=w.days.filter(d=>d.type!=='rest').reduce((s,d)=>{const l=runLogs[dateKey(d.date)];return s+(l&&l.status==='done'?l.km:0)},0);
+    return Math.max(w.totalKm,actual);
+  }),1);
+
+  const pad=8,barArea=W-pad*2;const barW=Math.max(6,(barArea/showWeeks.length)-4);const gap=(barArea-barW*showWeeks.length)/(showWeeks.length+1);
+  const chartH=H-30;
+
+  showWeeks.forEach((w,i)=>{
+    const x=pad+gap*(i+1)+barW*i;
+    const ph=(w.totalKm/maxKm)*chartH;
+    const actual=w.days.filter(d=>d.type!=='rest').reduce((s,d)=>{const l=runLogs[dateKey(d.date)];return s+(l&&l.status==='done'?l.km:0)},0);
+    const ah=Math.min((actual/maxKm)*chartH,chartH);
+    // Planned bar (gray)
+    ctx.fillStyle='#DEE2E6';ctx.beginPath();ctx.roundRect?ctx.roundRect(x,chartH-ph,barW,ph,3):ctx.rect(x,chartH-ph,barW,ph);ctx.fill();
+    // Actual bar (orange gradient)
+    if(ah>0){
+      const grad=ctx.createLinearGradient(x,0,x+barW,0);grad.addColorStop(0,'#FF6B35');grad.addColorStop(1,'#F7C59F');
+      ctx.fillStyle=grad;ctx.beginPath();ctx.roundRect?ctx.roundRect(x,chartH-ah,barW,ah,3):ctx.rect(x,chartH-ah,barW,ah);ctx.fill();
+    }
+    // Week label
+    ctx.fillStyle='#6C757D';ctx.font=`${Math.min(9,barW*0.8)}px Segoe UI`;ctx.textAlign='center';
+    ctx.fillText(`W${w.weekNum}`,x+barW/2,H-4);
+  });
+
+  // Legend
+  ctx.fillStyle='#DEE2E6';ctx.fillRect(pad,H-22,10,8);
+  ctx.fillStyle='#6C757D';ctx.font='9px Segoe UI';ctx.textAlign='left';ctx.fillText('Planned',pad+14,H-15);
+  ctx.fillStyle='#FF6B35';ctx.fillRect(pad+70,H-22,10,8);
+  ctx.fillStyle='#6C757D';ctx.fillText('Actual',pad+84,H-15);
+}
+
+/* ═══════════ PACE CALCULATOR ═══════════ */
+function calcPace(){
+  const distSel=document.getElementById('calc_dist').value;
+  document.getElementById('custom-dist-group').style.display=distSel==='custom'?'':'none';
+  const dist=distSel==='custom'?parseFloat(document.getElementById('calc_custom_dist').value)||0:parseFloat(distSel);
+  const secs=timeToSec(document.getElementById('calc_h').value,document.getElementById('calc_m').value,document.getElementById('calc_s').value);
+  if(!dist||!secs){document.getElementById('calc-results').style.display='none';return}
+
+  document.getElementById('calc-results').style.display='';
+  const pace=secs/dist;
+  const zones=getPaceZones(pace);
+  const speedKph=(dist/(secs/3600)).toFixed(1);
+  const speedMph=(dist*0.621371/(secs/3600)).toFixed(1);
+
+  document.getElementById('calc-main-results').innerHTML=`
+    <div class="calc-card"><div class="dist-label">Race Pace</div><div class="main-val">${secToPace(pace)}</div><div class="sub-val">/km</div></div>
+    <div class="calc-card"><div class="dist-label">Speed</div><div class="main-val">${speedKph}</div><div class="sub-val">km/h (${speedMph} mph)</div></div>
+    <div class="calc-card"><div class="dist-label">Total Time</div><div class="main-val">${secToTime(secs)}</div><div class="sub-val">${dist}km</div></div>
+    <div class="calc-card"><div class="dist-label">Pace per mile</div><div class="main-val">${secToPace(pace*1.60934)}</div><div class="sub-val">/mile</div></div>`;
+
+  // Predictions
+  const preds=[{d:1,l:'1 KM'},{d:5,l:'5 KM'},{d:10,l:'10 KM'},{d:21.1,l:'Half Marathon'},{d:42.2,l:'Full Marathon'}];
+  let predHtml='';
+  preds.forEach(p=>{
+    if(Math.abs(p.d-dist)<0.5){predHtml+=`<div class="predict-card" style="border:2px solid var(--primary)"><div class="p-dist">★ ${p.l}</div><div class="p-time">${secToTime(secs)}</div><div class="p-pace">${secToPace(pace)}/km (current)</div></div>`;return}
+    const t=estimateTime(secs,dist,p.d);
+    if(!t)return;
+    predHtml+=`<div class="predict-card"><div class="p-dist">${p.l}</div><div class="p-time">${secToTime(t)}</div><div class="p-pace">${secToPace(t/p.d)}/km</div></div>`;
+  });
+  document.getElementById('calc-predictions').innerHTML=predHtml;
+
+  // Splits
+  const step=dist<=5?1:dist<=10?1:dist<=21.1?5:5;
+  let tbl=`<thead><tr><th>Km</th><th>Split</th><th>Cumulative</th><th>Time at Km</th></tr></thead><tbody>`;
+  let cum=0;
+  for(let k=step;k<=dist+0.01;k+=step){
+    const km=Math.min(k,dist);const splitKm=km-(cum);
+    const splitT=Math.round(pace*splitKm);cum=km;const cumT=Math.round(pace*cum);
+    const isLast=km>=dist-0.01;
+    tbl+=`<tr${isLast?' class="highlight"':''}><td>${km.toFixed(1)}</td><td>${secToTime(splitT)}</td><td>${secToTime(cumT)}</td><td>${secToTime(cumT)}</td></tr>`;
+    if(km>=dist-0.01)break;
+  }
+  tbl+='</tbody>';
+  document.getElementById('splits-table').innerHTML=tbl;
+
+  // Zones
+  document.getElementById('zones-from-calc').innerHTML=`
+    <div class="pace-guide">
+      <div class="pace-item"><div class="pace-label">🟢 Easy Run</div><div class="pace-value">${secToPace(zones.easy)} /km</div><div style="font-size:.75em;color:var(--muted);margin-top:3px">Zone 1-2 | RPE 4-5</div></div>
+      <div class="pace-item tempo"><div class="pace-label">🟡 Tempo Run</div><div class="pace-value">${secToPace(zones.tempo)} /km</div><div style="font-size:.75em;color:var(--muted);margin-top:3px">Zone 3-4 | RPE 7-8</div></div>
+      <div class="pace-item interval"><div class="pace-label">🔴 Intervals</div><div class="pace-value">${secToPace(zones.interval)} /km</div><div style="font-size:.75em;color:var(--muted);margin-top:3px">Zone 5 | RPE 8-9</div></div>
+      <div class="pace-item long"><div class="pace-label">🔵 Long Run</div><div class="pace-value">${secToPace(zones.long)} /km</div><div style="font-size:.75em;color:var(--muted);margin-top:3px">Zone 2 | RPE 5-6</div></div>
+    </div>`;
+}
+
+/* ═══════════ SAVE / LOAD ═══════════ */
+function savePlan(){
+  if(!scheduleData)return;
+  const payload={scheduleData,formValues:captureForm(),selectedDays,savedAt:new Date().toISOString()};
+  localStorage.setItem('runningPlan',JSON.stringify(payload));
+  showToast('บันทึกแผนเรียบร้อย! 💾');
+  checkSavedPlan();
+}
+function captureForm(){
+  return{pr5k_h:v('pr5k_h'),pr5k_m:v('pr5k_m'),pr5k_s:v('pr5k_s'),pr10k_h:v('pr10k_h'),pr10k_m:v('pr10k_m'),pr10k_s:v('pr10k_s'),prhalf_h:v('prhalf_h'),prhalf_m:v('prhalf_m'),prhalf_s:v('prhalf_s'),prfull_h:v('prfull_h'),prfull_m:v('prfull_m'),prfull_s:v('prfull_s'),goal_distance:v('goal_distance'),race_date:v('race_date'),goal_h:v('goal_h'),goal_m:v('goal_m'),goal_s:v('goal_s'),run_period:v('run_period'),run_time:v('run_time'),experience:v('experience'),start_date:v('start_date')};
+}
+function v(id){return document.getElementById(id)?.value||''}
+
+function loadSavedPlan(){
+  const raw=localStorage.getItem('runningPlan');if(!raw)return;
+  const p=JSON.parse(raw);
+  scheduleData=p.scheduleData;
+  selectedDays=p.selectedDays||[1,3,5,0];
+  // Restore form
+  const f=p.formValues||{};
+  Object.entries(f).forEach(([k,val])=>{const el=document.getElementById(k);if(el)el.value=val});
+  // Restore day toggles
+  document.querySelectorAll('.day-toggle').forEach(btn=>{
+    const day=parseInt(btn.dataset.day);
+    btn.classList.toggle('active',selectedDays.includes(day));
+  });
+  document.getElementById('days-count').textContent=`เลือกแล้ว: ${selectedDays.length} วัน/สัปดาห์`;
+  // Re-parse dates
+  if(scheduleData.startDate)scheduleData.startDate=new Date(scheduleData.startDate);
+  if(scheduleData.raceDate)scheduleData.raceDate=new Date(scheduleData.raceDate);
+  scheduleData.weeks.forEach(w=>{
+    w.start=new Date(w.start);
+    w.days.forEach(d=>d.date=new Date(d.date));
+  });
+  renderSchedule();
+  document.getElementById('result-section').scrollIntoView({behavior:'smooth'});
+  showToast('โหลดแผนสำเร็จ! ✅');
+}
+
+function clearSavedPlan(){
+  if(!confirm('ต้องการลบแผนที่บันทึกไว้?'))return;
+  localStorage.removeItem('runningPlan');
+  document.getElementById('saved-banner').style.display='none';
+  showToast('ลบแผนแล้ว');
+}
+
+function checkSavedPlan(){
+  const raw=localStorage.getItem('runningPlan');
+  if(!raw){document.getElementById('saved-banner').style.display='none';return}
+  const p=JSON.parse(raw);
+  const d=p.scheduleData;
+  const dl=d.dist<=5?'5KM':d.dist<=10?'10KM':d.dist<=21.1?'Half Marathon':'Full Marathon';
+  const savedAt=new Date(p.savedAt).toLocaleDateString('th-TH',{day:'numeric',month:'short',year:'2-digit',hour:'2-digit',minute:'2-digit'});
+  document.getElementById('saved-meta').textContent=`${dl} · เป้าหมาย ${secToTime(d.goalTime)} · บันทึกเมื่อ ${savedAt}`;
+  document.getElementById('saved-banner').style.display='';
+}
+
+/* ═══════════ PERSIST LOGS ═══════════ */
+function persistLogs(){localStorage.setItem('runLogs',JSON.stringify(runLogs))}
+function loadLogs(){const raw=localStorage.getItem('runLogs');if(raw)runLogs=JSON.parse(raw)}
+
+/* ═══════════ TOAST ═══════════ */
+function showToast(msg){
+  let t=document.getElementById('toast');
+  if(!t){t=document.createElement('div');t.id='toast';t.style.cssText='position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#333;color:#fff;padding:12px 24px;border-radius:30px;z-index:999;font-size:.9em;font-weight:600;transition:opacity .3s;box-shadow:0 4px 20px rgba(0,0,0,.2)';document.body.appendChild(t)}
+  t.textContent=msg;t.style.opacity='1';
+  clearTimeout(t._to);t._to=setTimeout(()=>t.style.opacity='0',2500);
+}
+
+/* ═══════════ EXPORT EXCEL ═══════════ */
+function exportExcel(){
+  if(!scheduleData)return;
+  const sd=scheduleData;
+  const wb=XLSX.utils.book_new();
+  const rows=[['สัปดาห์','วันที่','วัน','ประเภท','รายละเอียด','แผน (km)','Pace','เวลาวิ่ง','จริง (km)','เวลาจริง','ความรู้สึก','หมายเหตุ']];
+  sd.weeks.forEach(w=>{
+    const wl=w.isRaceWeek?'Race Week':w.isDeload?'Recovery Week':`Week ${w.weekNum}`;
+    w.days.forEach(d=>{
+      const log=runLogs[dateKey(d.date)];
+      const feels=['','Very Hard','Hard','Okay','Good','Great'];
+      rows.push([wl,d.date.toLocaleDateString('th-TH'),DAY_TH[d.dow],d.label,d.desc,d.km>0?d.km:'',d.pace!=='-'?d.pace:'',d.time!=='-'?d.time:'',log&&log.status==='done'?log.km:'',log&&log.status==='done'?secToTime(log.secs):'',log&&log.status==='done'?feels[log.feel||3]:'',log?.note||'']);
+    });
+  });
+  const ws1=XLSX.utils.aoa_to_sheet(rows);
+  ws1['!cols']=[{wch:14},{wch:13},{wch:11},{wch:16},{wch:45},{wch:11},{wch:10},{wch:10},{wch:11},{wch:12},{wch:12},{wch:20}];
+  XLSX.utils.book_append_sheet(wb,ws1,'ตารางซ้อม');
+
+  // Summary
+  const sum=[['สัปดาห์','ช่วงวันที่','ประเภท','แผน (km)','จริง (km)','%จบ','วันที่วิ่ง']];
+  sd.weeks.forEach(w=>{
+    const end=new Date(w.start.getTime()+6*86400000);
+    const runDays=w.days.filter(d=>d.type!=='rest');
+    const actualKm=runDays.reduce((s,d)=>{const l=runLogs[dateKey(d.date)];return s+(l&&l.status==='done'?l.km:0)},0);
+    const done=runDays.filter(d=>runLogs[dateKey(d.date)]?.status==='done').length;
+    sum.push([`Week ${w.weekNum}`,`${w.start.toLocaleDateString('th-TH')}-${end.toLocaleDateString('th-TH')}`,w.isRaceWeek?'Race Week':w.isDeload?'Recovery Week':'Training',w.totalKm,actualKm.toFixed(1),w.totalKm>0?`${Math.round(actualKm/w.totalKm*100)}%`:'',`${done}/${runDays.length}`]);
+  });
+  const ws2=XLSX.utils.aoa_to_sheet(sum);ws2['!cols']=[{wch:10},{wch:28},{wch:16},{wch:11},{wch:11},{wch:8},{wch:10}];
+  XLSX.utils.book_append_sheet(wb,ws2,'สรุปรายสัปดาห์');
+
+  // Pace Guide
+  const pg=[['Training Zones & Pace Guide'],[''],['Target Distance',sd.dist<=5?'5 KM':sd.dist<=10?'10 KM':sd.dist<=21.1?'Half Marathon':'Full Marathon'],['Goal Time',secToTime(sd.goalTime)],['Race Pace',`${secToPace(sd.racePace)}/km`],[''],['Zone','Pace (/km)','Description'],['Easy Run',secToPace(sd.zones.easy),'Conversational, aerobic base'],['Tempo Run',secToPace(sd.zones.tempo),'Lactate threshold'],['Intervals',secToPace(sd.zones.interval),'Speed work, faster than race pace'],['Long Run',secToPace(sd.zones.long),'Endurance, slow & steady']];
+  const ws3=XLSX.utils.aoa_to_sheet(pg);ws3['!cols']=[{wch:18},{wch:14},{wch:35}];
+  XLSX.utils.book_append_sheet(wb,ws3,'Pace Guide');
+
+  const dl=sd.dist<=5?'5KM':sd.dist<=10?'10KM':sd.dist<=21.1?'HalfMarathon':'FullMarathon';
+  XLSX.writeFile(wb,`RunningSchedule_${dl}_${new Date().toISOString().split('T')[0]}.xlsx`);
+}
+
+/* ═══════════ EXPORT PDF ═══════════ */
+function exportPDF(){
+  if(!scheduleData)return;
+  const sd=scheduleData;
+  const{jsPDF}=window.jspdf;
+  const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
+  const pw=doc.internal.pageSize.getWidth(),ph=doc.internal.pageSize.getHeight();
+  const mg=18,cw=pw-2*mg;
+  function addHdr(){doc.setFillColor(255,107,53);doc.rect(0,0,pw,13,'F');doc.setFontSize(8);doc.setTextColor(255,255,255);const dl=sd.dist<=5?'5KM':sd.dist<=10?'10KM':sd.dist<=21.1?'Half Marathon':'Full Marathon';doc.text(`Running Schedule - ${dl} - Goal: ${secToTime(sd.goalTime)}`,mg,9);doc.text(`Page ${doc.internal.getCurrentPageInfo().pageNumber}`,pw-mg,9,{align:'right'})}
+  function np(){doc.addPage();addHdr();return mg+18}
+
+  // Cover
+  doc.setFillColor(255,107,53);doc.rect(0,0,pw,78,'F');doc.setFillColor(247,197,159);doc.rect(0,72,pw,8,'F');
+  doc.setFontSize(26);doc.setTextColor(255,255,255);doc.setFont('helvetica','bold');doc.text('RUNNING SCHEDULE',pw/2,34,{align:'center'});
+  doc.setFontSize(14);doc.text('TRAINING GUIDE',pw/2,47,{align:'center'});
+  const dl2=sd.dist<=5?'5 KM':sd.dist<=10?'10 KM':sd.dist<=21.1?'Half Marathon':'Full Marathon';
+  doc.setFontSize(12);doc.text(dl2+' Plan',pw/2,60,{align:'center'});
+
+  let yy=90;doc.setTextColor(45,53,97);doc.setFontSize(10);doc.setFont('helvetica','bold');doc.text('Your Training Summary',mg,yy);yy+=8;
+  const info=[['Target Distance',dl2],['Goal Time',secToTime(sd.goalTime)],['Race Pace',`${secToPace(sd.racePace)} /km`],['Total Weeks',`${sd.totalWeeks} weeks`],['Days / Week',`${sd.selectedDays.length} days`],['Total Volume',`${Math.round(sd.totalKm)} km`],['Level',sd.experience==='beginner'?'Beginner':sd.experience==='intermediate'?'Intermediate':'Advanced'],['Start Date',sd.startDate.toLocaleDateString('en-GB')],['Race Date',sd.raceDate?sd.raceDate.toLocaleDateString('en-GB'):'TBD']];
+  info.forEach((it,i)=>{const col=i%2,row=Math.floor(i/2),x=mg+col*(cw/2+5),y=yy+row*14;doc.setFillColor(248,248,249);doc.roundedRect(x-2,y-6,cw/2-3,12,2,2,'F');doc.setFontSize(7);doc.setTextColor(108,117,125);doc.setFont('helvetica','normal');doc.text(it[0],x+2,y-1);doc.setFontSize(9);doc.setTextColor(45,53,97);doc.setFont('helvetica','bold');doc.text(it[1],x+2,y+5)});
+  yy+=Math.ceil(info.length/2)*14+10;
+  doc.setFontSize(10);doc.setTextColor(45,53,97);doc.setFont('helvetica','bold');doc.text('Training Pace Zones',mg,yy);yy+=7;
+  [{l:'Easy Run',p:secToPace(sd.zones.easy),d:'Aerobic base, conversational',c:[212,237,218]},{l:'Tempo Run',p:secToPace(sd.zones.tempo),d:'Lactate threshold pace',c:[255,243,205]},{l:'Intervals',p:secToPace(sd.zones.interval),d:'Faster than race pace',c:[248,215,218]},{l:'Long Run',p:secToPace(sd.zones.long),d:'Build endurance',c:[204,229,255]}].forEach(z=>{doc.setFillColor(...z.c);doc.roundedRect(mg,yy-5,cw,11,2,2,'F');doc.setFontSize(8);doc.setTextColor(44,44,44);doc.setFont('helvetica','bold');doc.text(z.l,mg+3,yy+2);doc.setFont('helvetica','normal');doc.text(z.p+' /km',mg+48,yy+2);doc.setTextColor(108,117,125);doc.text(z.d,mg+80,yy+2);yy+=13});
+
+  // Schedule pages
+  let y=np();doc.setFontSize(12);doc.setTextColor(45,53,97);doc.setFont('helvetica','bold');doc.text('Weekly Training Schedule',mg,y);y+=8;
+  sd.weeks.forEach(w=>{
+    if(y>ph-45){y=np()}
+    const wl=w.isRaceWeek?'RACE WEEK':w.isDeload?'Recovery Week':`Week ${w.weekNum}`;
+    const end=new Date(w.start.getTime()+6*86400000);
+    const dr=`${w.start.toLocaleDateString('en-GB',{day:'numeric',month:'short'})} - ${end.toLocaleDateString('en-GB',{day:'numeric',month:'short'})}`;
+    doc.setFillColor(w.isRaceWeek?255:w.isDeload?108:45,w.isRaceWeek?107:w.isDeload?117:53,w.isRaceWeek?53:w.isDeload?125:97);
+    doc.rect(mg,y,cw,8,'F');doc.setFontSize(8);doc.setTextColor(255,255,255);doc.setFont('helvetica','bold');
+    doc.text(wl,mg+2,y+5.5);doc.setFont('helvetica','normal');doc.text(dr,mg+cw/2,y+5.5,{align:'center'});doc.text(`${w.totalKm} km`,mg+cw-2,y+5.5,{align:'right'});y+=10;
+    w.days.filter(d=>d.type!=='rest').forEach(d=>{
+      if(y>ph-20){y=np()}
+      const cols={easy:[212,237,218],tempo:[255,243,205],interval:[248,215,218],long:[204,229,255],race:[255,215,179]};
+      doc.setFillColor(...(cols[d.type]||[248,249,250]));doc.rect(mg,y,cw,7.5,'F');
+      doc.setFontSize(7.5);doc.setTextColor(44,44,44);doc.setFont('helvetica','bold');
+      doc.text(DAY_EN[d.dow].substring(0,3),mg+1,y+5);doc.text(d.date.toLocaleDateString('en-GB',{day:'2-digit',month:'short'}),mg+12,y+5);
+      doc.text(d.label,mg+33,y+5);doc.setFont('helvetica','normal');doc.setTextColor(80,80,80);
+      const tr=d.desc.length>52?d.desc.substring(0,49)+'...':d.desc;doc.text(tr,mg+78,y+5);
+      if(d.km>0){doc.setFont('helvetica','bold');doc.setTextColor(255,107,53);doc.text(`${d.km}km`,mg+cw-1,y+5,{align:'right'})}
+      // Log status
+      const log=runLogs[dateKey(d.date)];
+      if(log&&log.status==='done'){doc.setFont('helvetica','bold');doc.setTextColor(40,167,69);doc.text(`✓${log.km}km`,mg+cw-18,y+5)}
+      y+=8.5;
+    });y+=4;
+  });
+
+  // Tips
+  y=np();doc.setFontSize(12);doc.setTextColor(45,53,97);doc.setFont('helvetica','bold');doc.text('Training Tips & Guidelines',mg,y);y+=8;
+  const tips=[['80/20 Rule','Run 80% of weekly mileage at Easy pace (Zone 2), only 20% at high intensity.'],['10% Rule','Never increase total weekly mileage by more than 10% from the previous week.'],['Recovery Week','Every 4th week is a recovery week - reduce volume by 25-30% to allow adaptation.'],['Warm Up/Cool Down','Jog easy 5-10 min before; stretch for 10 min after every run.'],['Hydration','Drink 500ml 2hrs before running. Hydrate every 15-20 min during long runs.'],['Sleep','Aim for 7-9 hours of sleep per night. Recovery happens during sleep.'],['Cross Training','On rest days, try swimming or easy cycling to boost fitness without impact.'],['Nutrition','Eat carbs 2-3hrs before long runs; consume protein within 30 min after.'],['Listen to Body','Stop for sharp or unusual pain. Consult a doctor if it persists.'],['Race Day',"Don't go out too fast! Stick to goal pace for the first 5-10km, then push."]];
+  tips.forEach((t,i)=>{if(y>ph-18){y=np()}doc.setFillColor(i%2===0?248:255,249,250);doc.rect(mg,y-4,cw,10,'F');doc.setFontSize(8.5);doc.setTextColor(255,107,53);doc.setFont('helvetica','bold');doc.text(t[0],mg+2,y+2.5);doc.setTextColor(44,44,44);doc.setFont('helvetica','normal');doc.text(t[1],mg+42,y+2.5);y+=12});
+
+  const dl=sd.dist<=5?'5KM':sd.dist<=10?'10KM':sd.dist<=21.1?'HalfMarathon':'FullMarathon';
+  doc.save(`RunningGuide_${dl}_${new Date().toISOString().split('T')[0]}.pdf`);
+}
+
+/* ═══════════ EXPORT ICS ═══════════ */
+function exportGoogleCalendar(){
+  if(!scheduleData)return;
+  const sd=scheduleData;
+  function fp(n){return String(n).padStart(2,'0')}
+  function fdt(date,ts){const[h,m]=ts.split(':');const eh=parseInt(h)+1;return{s:`${date.getFullYear()}${fp(date.getMonth()+1)}${fp(date.getDate())}T${fp(h)}${fp(m)}00`,e:`${date.getFullYear()}${fp(date.getMonth()+1)}${fp(date.getDate())}T${fp(eh<24?eh:23)}${fp(m)}00`}}
+  function esc(s){return s.replace(/,/g,'\\,').replace(/;/g,'\\;').replace(/\n/g,'\\n')}
+  const dl=sd.dist<=5?'5KM':sd.dist<=10?'10KM':sd.dist<=21.1?'Half Marathon':'Full Marathon';
+  let ics=`BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//Running Schedule Planner//EN\r\nCALSCALE:GREGORIAN\r\nX-WR-CALNAME:Running Schedule\r\n`;
+  sd.weeks.forEach(w=>{
+    w.days.forEach(d=>{
+      if(d.type==='rest')return;
+      const{s,e}=fdt(d.date,d.time!=='-'?d.time:'06:00');
+      const uid=`run-${s}-${Math.random().toString(36).substr(2,6)}@rsp`;
+      const sum=d.type==='race'?`RACE DAY - ${dl}`:` ${d.label} - ${d.km}km`;
+      const desc=`${d.desc}\\nPace: ${d.pace}/km\\nDistance: ${d.km}km\\nWeek ${w.weekNum} of ${sd.totalWeeks}`;
+      ics+=`BEGIN:VEVENT\r\nUID:${uid}\r\nDTSTART:${s}\r\nDTEND:${e}\r\nSUMMARY:${esc(sum)}\r\nDESCRIPTION:${esc(desc)}\r\nCATEGORIES:Running\r\nEND:VEVENT\r\n`;
+    });
+  });
+  ics+=`END:VCALENDAR`;
+  const blob=new Blob([ics],{type:'text/calendar;charset=utf-8'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`RunningSchedule_${dl.replace(' ','')}.ics`;a.click();URL.revokeObjectURL(a.href);
+}
+
+/* ═══════════ INIT ═══════════ */
+window.onload=function(){
+  const today=new Date();
+  const nm=new Date(today);nm.setDate(today.getDate()+((8-today.getDay())%7||7));
+  document.getElementById('start_date').value=nm.toISOString().split('T')[0];
+  const rd=new Date(nm);rd.setDate(rd.getDate()+16*7);
+  document.getElementById('race_date').value=rd.toISOString().split('T')[0];
+  loadLogs();checkSavedPlan();
+
+  // Close modal on overlay click
+  document.getElementById('log-modal').addEventListener('click',function(e){if(e.target===this)closeLogModal()});
+
+  // Redraw chart on resize
+  window.addEventListener('resize',()=>{if(scheduleData&&document.getElementById('page-tracker').classList.contains('active'))drawChart()});
+};
+</script>
+</body>
+</html>
