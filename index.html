@@ -220,6 +220,17 @@ select option{background:#1A2540;color:var(--text)}
   .run-distance{display:none}
   header{min-height:360px}
 }
+
+/* ─── LANG TOGGLE ─── */
+.lang-toggle{margin:auto 0;padding:6px 14px;border-radius:20px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.05);color:var(--text2);cursor:pointer;font-size:.8em;font-weight:600;transition:all .2s;font-family:inherit;flex-shrink:0}
+.lang-toggle:hover{background:rgba(255,255,255,.1);color:var(--text)}
+
+/* ─── FOOTER ─── */
+.site-footer{background:#060C18;border-top:1px solid rgba(255,255,255,.07);padding:20px;text-align:center}
+.footer-inner{max-width:900px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;font-size:.82em;color:rgba(255,255,255,.35)}
+.footer-credit a{color:var(--primary);text-decoration:none;font-weight:600}
+.footer-credit a:hover{text-decoration:underline}
+.footer-right{color:rgba(255,255,255,.2)}
 </style>
 </head>
 <body>
@@ -231,6 +242,7 @@ select option{background:#1A2540;color:var(--text)}
     <div class="hero-badge">🏃 Running Schedule Planner</div>
     <h1>วางแผนการวิ่ง<br><span class="hero-accent">อย่างมืออาชีพ</span></h1>
     <p>สร้างตารางซ้อมส่วนตัว · คำนวณ Pace · Export ทุกรูปแบบ</p>
+    <!-- hero text updated by applyLang() -->
     <div class="hero-chips">
       <span class="hero-chip">🎯 5K → Full Marathon</span>
       <span class="hero-chip">⚡ Pace Calculator</span>
@@ -246,6 +258,8 @@ select option{background:#1A2540;color:var(--text)}
     <button class="nav-tab" onclick="switchPage('summary')">📊 สรุปแผน</button>
     <button class="nav-tab" onclick="switchPage('guide')">📖 Pace Guide</button>
     <button class="nav-tab" onclick="switchPage('pace')">⚡ Pace Calculator</button>
+    <div style="flex:1"></div>
+    <button class="lang-toggle" onclick="toggleLang()" id="lang-btn">🇬🇧 EN</button>
   </div>
 </div>
 
@@ -255,12 +269,12 @@ select option{background:#1A2540;color:var(--text)}
   <div id="saved-banner" style="display:none">
     <div class="saved-banner">
       <div>
-        <div class="sb-info">💾 มีแผนที่บันทึกไว้</div>
+        <div class="sb-info" data-i18n="saved_title">💾 มีแผนที่บันทึกไว้</div>
         <div class="sb-meta" id="saved-meta"></div>
       </div>
       <div style="display:flex;gap:8px;flex-shrink:0">
-        <button class="btn btn-sm" style="background:#fff;color:#28A745;border:2px solid #fff" onclick="loadSavedPlan()">โหลดแผนนี้</button>
-        <button class="btn btn-sm" style="background:rgba(255,255,255,.2);color:#fff;border:2px solid rgba(255,255,255,.4)" onclick="clearSavedPlan()">ลบทิ้ง</button>
+        <button class="btn btn-sm" data-i18n="btn_load_plan" style="background:#fff;color:#28A745;border:2px solid #fff" onclick="loadSavedPlan()">โหลดแผนนี้</button>
+        <button class="btn btn-sm" data-i18n="btn_clear_plan" style="background:rgba(255,255,255,.2);color:#fff;border:2px solid rgba(255,255,255,.4)" onclick="clearSavedPlan()">ลบทิ้ง</button>
       </div>
     </div>
   </div>
@@ -269,8 +283,8 @@ select option{background:#1A2540;color:var(--text)}
   <div class="card">
     <div class="card-header">
       <div class="card-icon">🏆</div>
-      <div><h2>สถิติการวิ่งของคุณ (Personal Records)</h2>
-      <p>ใส่เวลาที่ดีที่สุด หรือเวลาที่คาดว่าจะจบ — เว้นว่างได้ถ้ายังไม่เคยวิ่ง</p></div>
+      <div><h2 data-i18n="pr_title">สถิติการวิ่งของคุณ (Personal Records)</h2>
+      <p data-i18n="pr_sub">ใส่เวลาที่ดีที่สุด หรือเวลาที่คาดว่าจะจบ — เว้นว่างได้ถ้ายังไม่เคยวิ่ง</p></div>
     </div>
     <div class="pr-grid">
       <div class="pr-card">
@@ -280,7 +294,7 @@ select option{background:#1A2540;color:var(--text)}
           <span>:</span><input type="number" id="pr5k_m" placeholder="MM" min="0" max="59">
           <span>:</span><input type="number" id="pr5k_s" placeholder="SS" min="0" max="59">
         </div>
-        <small style="color:var(--muted);margin-top:6px;display:block">ตัวอย่าง: 0:25:00 = 25 นาที</small>
+        <small data-i18n="pr_example" style="color:var(--muted);margin-top:6px;display:block">ตัวอย่าง: 0:25:00 = 25 นาที</small>
       </div>
       <div class="pr-card">
         <div class="distance-label"><span class="distance-badge">10 KM</span>Personal Best</div>
@@ -313,11 +327,11 @@ select option{background:#1A2540;color:var(--text)}
   <div class="card">
     <div class="card-header">
       <div class="card-icon">🎯</div>
-      <div><h2>เป้าหมายการแข่งขัน</h2><p>ระบุระยะทาง เวลาเป้าหมาย และวันแข่ง</p></div>
+      <div><h2 data-i18n="goal_title">เป้าหมายการแข่งขัน</h2><p data-i18n="goal_sub">ระบุระยะทาง เวลาเป้าหมาย และวันแข่ง</p></div>
     </div>
     <div class="form-grid">
       <div class="form-group">
-        <label>ระยะทางที่ต้องการวิ่ง</label>
+        <label data-i18n="goal_dist_label">ระยะทางที่ต้องการวิ่ง</label>
         <select id="goal_distance">
           <option value="5">5 KM</option>
           <option value="10">10 KM</option>
@@ -326,19 +340,19 @@ select option{background:#1A2540;color:var(--text)}
         </select>
       </div>
       <div class="form-group">
-        <label>วันที่แข่งขัน</label>
+        <label data-i18n="goal_date_label">วันที่แข่งขัน</label>
         <input type="date" id="race_date">
       </div>
     </div>
     <div class="section-divider"></div>
     <div class="form-group">
-      <label>เวลาเป้าหมาย (Goal Time)</label>
+      <label data-i18n="goal_time_label">เวลาเป้าหมาย (Goal Time)</label>
       <div class="time-input-group" style="max-width:260px">
         <input type="number" id="goal_h" placeholder="HH" min="0" max="10">
         <span>:</span><input type="number" id="goal_m" placeholder="MM" min="0" max="59">
         <span>:</span><input type="number" id="goal_s" placeholder="SS" min="0" max="59">
       </div>
-      <small>เว้นว่างให้ระบบคำนวณจากสถิติของคุณอัตโนมัติ</small>
+      <small data-i18n="goal_time_hint">เว้นว่างให้ระบบคำนวณจากสถิติของคุณอัตโนมัติ</small>
     </div>
   </div>
 
@@ -346,10 +360,10 @@ select option{background:#1A2540;color:var(--text)}
   <div class="card">
     <div class="card-header">
       <div class="card-icon">📅</div>
-      <div><h2>ตั้งค่าตารางการฝึกซ้อม</h2><p>กำหนดวัน เวลา และความถี่ที่ต้องการวิ่ง</p></div>
+      <div><h2 data-i18n="prefs_title">ตั้งค่าตารางการฝึกซ้อม</h2><p data-i18n="prefs_sub">กำหนดวัน เวลา และความถี่ที่ต้องการวิ่ง</p></div>
     </div>
     <div class="form-group" style="margin-bottom:18px">
-      <label>เลือกวันที่ต้องการวิ่ง</label>
+      <label data-i18n="prefs_days_label">เลือกวันที่ต้องการวิ่ง</label>
       <div class="days-selector" id="days-selector">
         <button class="day-toggle active" data-day="1" onclick="toggleDay(this)">จ</button>
         <button class="day-toggle" data-day="2" onclick="toggleDay(this)">อ</button>
@@ -359,19 +373,19 @@ select option{background:#1A2540;color:var(--text)}
         <button class="day-toggle" data-day="6" onclick="toggleDay(this)">ส</button>
         <button class="day-toggle active" data-day="0" onclick="toggleDay(this)">อา</button>
       </div>
-      <small id="days-count">เลือกแล้ว: 4 วัน/สัปดาห์</small>
+      <small id="days-count"></small>
     </div>
     <div class="form-grid">
       <div class="form-group">
-        <label>ช่วงเวลาที่ต้องการวิ่ง</label>
+        <label data-i18n="prefs_period_label">ช่วงเวลาที่ต้องการวิ่ง</label>
         <select id="run_period"><option value="morning">เช้า (Morning)</option><option value="evening">เย็น (Evening)</option></select>
       </div>
       <div class="form-group">
-        <label>เวลาที่ต้องการวิ่ง</label>
+        <label data-i18n="prefs_time_label">เวลาที่ต้องการวิ่ง</label>
         <input type="time" id="run_time" value="06:00">
       </div>
       <div class="form-group">
-        <label>ระดับประสบการณ์</label>
+        <label data-i18n="prefs_exp_label">ระดับประสบการณ์</label>
         <select id="experience">
           <option value="beginner">มือใหม่ (Beginner)</option>
           <option value="intermediate" selected>กลาง (Intermediate)</option>
@@ -379,14 +393,14 @@ select option{background:#1A2540;color:var(--text)}
         </select>
       </div>
       <div class="form-group">
-        <label>วันที่เริ่มซ้อม</label>
+        <label data-i18n="prefs_start_label">วันที่เริ่มซ้อม</label>
         <input type="date" id="start_date">
       </div>
     </div>
   </div>
 
   <div style="text-align:center;margin:28px 0">
-    <button class="btn btn-primary" style="font-size:1.05em;padding:15px 44px" onclick="generateSchedule()">
+    <button class="btn btn-primary" data-i18n="btn_generate" style="font-size:1.05em;padding:15px 44px" onclick="generateSchedule()">
       ✨ สร้างตารางการวิ่ง
     </button>
   </div>
@@ -399,28 +413,28 @@ select option{background:#1A2540;color:var(--text)}
         <div><h2 id="plan-title">แผนการฝึกซ้อม</h2><p id="plan-subtitle"></p></div>
       </div>
       <div class="stats-grid" id="stats-grid"></div>
-      <h3 style="font-size:.93em;font-weight:700;color:var(--secondary);margin-bottom:10px">🏃 Pace Guide ของคุณ</h3>
+      <h3 data-i18n="pace_guide_title" style="font-size:.93em;font-weight:700;color:var(--secondary);margin-bottom:10px">🏃 Pace Guide ของคุณ</h3>
       <div class="pace-guide" id="pace-guide"></div>
     </div>
 
     <div class="card">
       <div class="card-header">
         <div class="card-icon">🗓️</div>
-        <div><h2>ตารางการฝึกซ้อมรายสัปดาห์</h2><p id="schedule-subtitle"></p></div>
+        <div><h2 data-i18n="sched_title">ตารางการฝึกซ้อมรายสัปดาห์</h2><p id="schedule-subtitle"></p></div>
       </div>
       <div id="schedule-container"></div>
 
       <div class="section-divider"></div>
       <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:14px">
-        <h3 style="font-size:.97em;font-weight:700;color:var(--secondary)">📥 Export ตารางของคุณ</h3>
-        <button class="btn btn-sm btn-success" onclick="savePlan()">💾 บันทึกแผนนี้</button>
+        <h3 data-i18n="export_title" style="font-size:.97em;font-weight:700;color:var(--secondary)">📥 Export ตารางของคุณ</h3>
+        <button class="btn btn-sm btn-success" data-i18n="btn_save" onclick="savePlan()">💾 บันทึกแผนนี้</button>
       </div>
       <div class="action-buttons">
-        <button class="btn btn-success" onclick="exportExcel()">📊 Download Excel</button>
-        <button class="btn btn-info" onclick="exportPDF()">📄 Download PDF Guide</button>
-        <button class="btn btn-google" onclick="exportGoogleCalendar()">📅 Google Calendar (.ics)</button>
+        <button class="btn btn-success" data-i18n="btn_excel" onclick="exportExcel()">📊 Download Excel</button>
+        <button class="btn btn-info" data-i18n="btn_pdf" onclick="exportPDF()">📄 Download PDF Guide</button>
+        <button class="btn btn-google" data-i18n="btn_gcal" onclick="exportGoogleCalendar()">📅 Google Calendar (.ics)</button>
       </div>
-      <div class="alert alert-info" style="margin-top:14px">
+      <div id="gcal-alert" class="alert alert-info" style="margin-top:14px">
         <strong>วิธีนำเข้า Google Calendar:</strong> ดาวน์โหลดไฟล์ .ics → Google Calendar → Settings → Import & Export → Import
       </div>
     </div>
@@ -431,9 +445,9 @@ select option{background:#1A2540;color:var(--text)}
 <div class="page" id="page-summary">
   <div id="summary-no-plan" class="card" style="text-align:center;padding:40px 20px">
     <div style="font-size:3em;margin-bottom:12px">📋</div>
-    <h3 style="color:var(--secondary);margin-bottom:8px">ยังไม่มีแผนการวิ่ง</h3>
-    <p style="color:var(--muted);margin-bottom:18px">ไปที่แท็บ "สร้างแผน" เพื่อสร้างตารางการวิ่งก่อน</p>
-    <button class="btn btn-primary" onclick="switchPage('plan')">ไปสร้างแผน →</button>
+    <h3 data-i18n="sum_no_plan_title" style="color:var(--secondary);margin-bottom:8px">ยังไม่มีแผนการวิ่ง</h3>
+    <p data-i18n="sum_no_plan_sub" style="color:var(--muted);margin-bottom:18px">ไปที่แท็บ "สร้างแผน" เพื่อสร้างตารางการวิ่งก่อน</p>
+    <button class="btn btn-primary" data-i18n="sum_no_plan_btn" onclick="switchPage('plan')">ไปสร้างแผน →</button>
   </div>
   <div id="summary-content" style="display:none">
     <!-- Hero -->
@@ -450,7 +464,7 @@ select option{background:#1A2540;color:var(--text)}
     <div class="card">
       <div class="card-header">
         <div class="card-icon">🥧</div>
-        <div><h2>สัดส่วนการวิ่งแต่ละประเภท</h2><p>ระยะทางรวมจำแนกตาม Training Zone</p></div>
+        <div><h2 data-i18n="sum_breakdown_title">สัดส่วนการวิ่งแต่ละประเภท</h2><p data-i18n="sum_breakdown_sub">ระยะทางรวมจำแนกตาม Training Zone</p></div>
       </div>
       <div class="type-breakdown" id="sum-type-breakdown"></div>
     </div>
@@ -459,7 +473,7 @@ select option{background:#1A2540;color:var(--text)}
     <div class="card">
       <div class="card-header">
         <div class="card-icon">📈</div>
-        <div><h2>ระยะทางรายสัปดาห์</h2><p>แผนภาพ km ที่วิ่งแต่ละสัปดาห์ (สีเทา = Recovery, สีแดง = Race Week)</p></div>
+        <div><h2 data-i18n="sum_weekly_title">ระยะทางรายสัปดาห์</h2><p data-i18n="sum_weekly_sub">แผนภาพ km ที่วิ่งแต่ละสัปดาห์ (สีเทา = Recovery, สีแดง = Race Week)</p></div>
       </div>
       <div class="week-bar-wrap" id="sum-weekly-bars"></div>
     </div>
@@ -468,7 +482,7 @@ select option{background:#1A2540;color:var(--text)}
     <div class="card">
       <div class="card-header">
         <div class="card-icon">🗺️</div>
-        <div><h2>Milestones สำคัญ</h2><p>จุดเด่นในแผนการฝึกซ้อมของคุณ</p></div>
+        <div><h2 data-i18n="sum_milestone_title">Milestones สำคัญ</h2><p data-i18n="sum_milestone_sub">จุดเด่นในแผนการฝึกซ้อมของคุณ</p></div>
       </div>
       <div class="milestone-list" id="sum-milestones"></div>
     </div>
@@ -481,13 +495,13 @@ select option{background:#1A2540;color:var(--text)}
   <div class="card" id="guide-your-zones">
     <div class="card-header">
       <div class="card-icon">🎯</div>
-      <div><h2>Training Zones ของคุณ</h2><p id="guide-zones-subtitle">สร้างแผนการวิ่งก่อนเพื่อดู Pace Zone ส่วนตัว</p></div>
+      <div><h2 data-i18n="guide_zones_title">Training Zones ของคุณ</h2><p id="guide-zones-subtitle" data-i18n="guide_zones_sub_default">สร้างแผนการวิ่งก่อนเพื่อดู Pace Zone ส่วนตัว</p></div>
     </div>
     <div id="guide-zones-content">
       <div class="pg-no-plan">
         <div style="font-size:2.5em;margin-bottom:10px">🏃</div>
-        <p>สร้างแผนการวิ่งก่อน แล้ว Pace Zone จะคำนวณตาม Goal Time ของคุณโดยอัตโนมัติ</p>
-        <button class="btn btn-primary btn-sm" style="margin-top:14px" onclick="switchPage('plan')">ไปสร้างแผน →</button>
+        <p data-i18n="guide_no_plan_text">สร้างแผนการวิ่งก่อน แล้ว Pace Zone จะคำนวณตาม Goal Time ของคุณโดยอัตโนมัติ</p>
+        <button class="btn btn-primary btn-sm" data-i18n="guide_no_plan_btn" style="margin-top:14px" onclick="switchPage('plan')">ไปสร้างแผน →</button>
       </div>
     </div>
   </div>
@@ -496,7 +510,7 @@ select option{background:#1A2540;color:var(--text)}
   <div class="card">
     <div class="card-header">
       <div class="card-icon">📚</div>
-      <div><h2>คู่มือแต่ละ Training Zone</h2><p>ความหมาย การใช้งาน และประโยชน์ของแต่ละ Zone</p></div>
+      <div><h2 data-i18n="guide_ref_title">คู่มือแต่ละ Training Zone</h2><p data-i18n="guide_ref_sub">ความหมาย การใช้งาน และประโยชน์ของแต่ละ Zone</p></div>
     </div>
 
     <div class="zone-card easy">
@@ -560,7 +574,7 @@ select option{background:#1A2540;color:var(--text)}
   <div class="card">
     <div class="card-header">
       <div class="card-icon">💡</div>
-      <div><h2>หลักการฝึกซ้อมที่สำคัญ</h2><p>Tips จาก Evidence-based Running Science</p></div>
+      <div><h2 data-i18n="guide_tips_title">หลักการฝึกซ้อมที่สำคัญ</h2><p data-i18n="guide_tips_sub">Tips จาก Evidence-based Running Science</p></div>
     </div>
     <div class="tip-row">
       <div class="tip-icon">⚖️</div>
@@ -598,11 +612,11 @@ select option{background:#1A2540;color:var(--text)}
   <div class="card">
     <div class="card-header">
       <div class="card-icon">⚡</div>
-      <div><h2>Pace Calculator</h2><p>คำนวณ Pace, Split และเวลาคาดการณ์ทุกระยะ</p></div>
+      <div><h2 data-i18n="calc_title">Pace Calculator</h2><p data-i18n="calc_sub">คำนวณ Pace, Split และเวลาคาดการณ์ทุกระยะ</p></div>
     </div>
     <div class="form-grid">
       <div class="form-group">
-        <label>ระยะทาง</label>
+        <label data-i18n="calc_dist_label">ระยะทาง</label>
         <select id="calc_dist" onchange="calcPace()">
           <option value="1">1 KM</option>
           <option value="5">5 KM</option>
@@ -617,7 +631,7 @@ select option{background:#1A2540;color:var(--text)}
         <input type="number" id="calc_custom_dist" placeholder="เช่น 15" min="0.1" step="0.1" oninput="calcPace()">
       </div>
       <div class="form-group">
-        <label>เวลาเป้าหมาย</label>
+        <label data-i18n="calc_time_label">เวลาเป้าหมาย</label>
         <div class="time-input-group">
           <input type="number" id="calc_h" placeholder="HH" min="0" max="24" value="2" oninput="calcPace()">
           <span>:</span><input type="number" id="calc_m" placeholder="MM" min="0" max="59" value="0" oninput="calcPace()">
@@ -629,11 +643,11 @@ select option{background:#1A2540;color:var(--text)}
       <div class="section-divider"></div>
       <div class="calc-result-grid" id="calc-main-results"></div>
       <div class="section-divider"></div>
-      <h3 style="font-size:.93em;font-weight:700;color:var(--secondary);margin-bottom:4px">🏃 Race Predictions</h3>
-      <p style="font-size:.8em;color:var(--muted);margin-bottom:10px">ถ้าวิ่งระยะนี้ได้ตามเป้า คาดว่าจะจบระยะอื่นได้ประมาณ (Riegel's Formula)</p>
+      <h3 data-i18n="calc_pred_title" style="font-size:.93em;font-weight:700;color:var(--secondary);margin-bottom:4px">🏃 Race Predictions</h3>
+      <p data-i18n="calc_pred_sub" style="font-size:.8em;color:var(--muted);margin-bottom:10px">ถ้าวิ่งระยะนี้ได้ตามเป้า คาดว่าจะจบระยะอื่นได้ประมาณ (Riegel's Formula)</p>
       <div class="predict-grid" id="calc-predictions"></div>
       <div class="section-divider"></div>
-      <h3 style="font-size:.93em;font-weight:700;color:var(--secondary);margin-bottom:4px">📊 Split Table (Even Pace)</h3>
+      <h3 data-i18n="calc_split_title" style="font-size:.93em;font-weight:700;color:var(--secondary);margin-bottom:4px">📊 Split Table (Even Pace)</h3>
       <div style="overflow-x:auto"><table class="splits-table" id="splits-table"></table></div>
     </div>
   </div>
@@ -641,15 +655,261 @@ select option{background:#1A2540;color:var(--text)}
   <div class="card">
     <div class="card-header">
       <div class="card-icon">🎯</div>
-      <div><h2>Training Zones</h2><p>โซนความเร็วฝึกซ้อมที่คำนวณจาก Pace เป้าหมาย</p></div>
+      <div><h2 data-i18n="zones_title">Training Zones</h2><p data-i18n="zones_sub">โซนความเร็วฝึกซ้อมที่คำนวณจาก Pace เป้าหมาย</p></div>
     </div>
     <div id="zones-from-calc">
-      <div class="alert alert-info">ใส่ระยะทางและเวลาด้านบนเพื่อดู Training Zones</div>
+      <div class="alert alert-info" data-i18n="zones_no_plan">ใส่ระยะทางและเวลาด้านบนเพื่อดู Training Zones</div>
     </div>
   </div>
 </div>
 
 <script>
+/* ── i18n ── */
+const I18N = {
+  th: {
+    nav_plan:'📋 สร้างแผน', nav_summary:'📊 สรุปแผน', nav_guide:'📖 Pace Guide', nav_pace:'⚡ Pace Calculator',
+    hero_badge:'🏃 Running Schedule Planner',
+    hero_h1_line1:'วางแผนการวิ่ง', hero_h1_line2:'อย่างมืออาชีพ',
+    hero_sub:'สร้างตารางซ้อมส่วนตัว · คำนวณ Pace · Export ทุกรูปแบบ',
+    pr_title:'สถิติการวิ่งของคุณ (Personal Records)',
+    pr_sub:'ใส่เวลาที่ดีที่สุด หรือเวลาที่คาดว่าจะจบ — เว้นว่างได้ถ้ายังไม่เคยวิ่ง',
+    pr_example:'ตัวอย่าง: 0:25:00 = 25 นาที',
+    goal_title:'เป้าหมายการแข่งขัน', goal_sub:'ระบุระยะทาง เวลาเป้าหมาย และวันแข่ง',
+    goal_dist_label:'ระยะทางที่ต้องการวิ่ง', goal_date_label:'วันที่แข่งขัน',
+    goal_time_label:'เวลาเป้าหมาย (Goal Time)',
+    goal_time_hint:'เว้นว่างให้ระบบคำนวณจากสถิติของคุณอัตโนมัติ',
+    dist_5:'5 KM', dist_10:'10 KM', dist_half:'Half Marathon (21.1 KM)', dist_full:'Full Marathon (42.2 KM)',
+    prefs_title:'ตั้งค่าตารางการฝึกซ้อม', prefs_sub:'กำหนดวัน เวลา และความถี่ที่ต้องการวิ่ง',
+    prefs_days_label:'เลือกวันที่ต้องการวิ่ง',
+    prefs_period_label:'ช่วงเวลาที่ต้องการวิ่ง',
+    period_morning:'เช้า (Morning)', period_evening:'เย็น (Evening)',
+    prefs_time_label:'เวลาที่ต้องการวิ่ง',
+    prefs_exp_label:'ระดับประสบการณ์',
+    exp_beginner:'มือใหม่ (Beginner)', exp_intermediate:'กลาง (Intermediate)', exp_advanced:'ขั้นสูง (Advanced)',
+    prefs_start_label:'วันที่เริ่มซ้อม',
+    days_count:(n)=>`เลือกแล้ว: ${n} วัน/สัปดาห์`,
+    days_names:['อา','จ','อ','พ','พฤ','ศ','ส'],
+    btn_generate:'✨ สร้างตารางการวิ่ง',
+    plan_title_prefix:'แผน', plan_title_goal:'เป้าหมาย',
+    plan_week:'สัปดาห์', plan_daysperweek:'วัน/สัปดาห์', plan_start:'เริ่ม',
+    stats_weeks:'สัปดาห์', stats_days:'วัน/สัปดาห์', stats_km:'KM รวม',
+    stats_goal:'เป้าหมาย', stats_pace:'Race Pace /km',
+    pace_guide_title:'🏃 Pace Guide ของคุณ',
+    pace_easy:'🟢 Easy Run', pace_tempo:'🟡 Tempo Run', pace_interval:'🔴 Intervals', pace_long:'🔵 Long Run',
+    sched_title:'ตารางการฝึกซ้อมรายสัปดาห์',
+    sched_sub_prefix:'สัปดาห์', sched_sub_total:'รวม',
+    export_title:'📥 Export ตารางของคุณ',
+    btn_save:'💾 บันทึกแผนนี้', btn_excel:'📊 Download Excel',
+    btn_pdf:'📄 Download PDF Guide', btn_gcal:'📅 Google Calendar (.ics)',
+    alert_gcal:'<strong>วิธีนำเข้า Google Calendar:</strong> ดาวน์โหลดไฟล์ .ics → Google Calendar → Settings → Import & Export → Import',
+    saved_title:'💾 มีแผนที่บันทึกไว้',
+    btn_load_plan:'โหลดแผนนี้', btn_clear_plan:'ลบทิ้ง',
+    day_full:['อาทิตย์','จันทร์','อังคาร','พุธ','พฤหัสบดี','ศุกร์','เสาร์'],
+    week_label:(n)=>`สัปดาห์ที่ ${n}`, week_recovery:'💤 Recovery Week', week_race:'🏁 Race Week',
+    type_easy_label:'Easy Run', type_easy_desc:'Conversational pace, aerobic base building',
+    type_tempo_label:'Tempo Run', type_tempo_desc:'Lactate threshold pace, 20–40 min sustained effort',
+    type_interval_label:'Intervals', type_interval_desc:'400–800m × 4–6 reps faster than Race Pace',
+    type_long_label:'Long Run', type_long_desc:'Build endurance at conversational pace',
+    type_taper_label:'Easy Run', type_taper_desc:'Light taper run — reduce volume before race',
+    type_rest_label:'Rest / Cross-Training', type_rest_desc:'Rest day or light cross-training (swim, cycling)',
+    type_race_label:'RACE DAY! 🏁',
+    sum_no_plan_title:'ยังไม่มีแผนการวิ่ง', sum_no_plan_sub:'ไปที่แท็บ "สร้างแผน" เพื่อสร้างตารางการวิ่งก่อน',
+    sum_no_plan_btn:'ไปสร้างแผน →',
+    sum_sessions:'Sessions', sum_actual_km:'KM จริง', sum_planned_km:'KM ตามแผน', sum_elapsed:'เวลาผ่านไป',
+    sum_cd_label_suffix:'วันจนถึง Race Day',
+    sum_breakdown_title:'สัดส่วนการวิ่งแต่ละประเภท', sum_breakdown_sub:'ระยะทางรวมจำแนกตาม Training Zone',
+    sum_weekly_title:'ระยะทางรายสัปดาห์', sum_weekly_sub:'แผนภาพ km ที่วิ่งแต่ละสัปดาห์ (สีเทา = Recovery, สีแดง = Race Week)',
+    sum_milestone_title:'Milestones สำคัญ', sum_milestone_sub:'จุดเด่นในแผนการฝึกซ้อมของคุณ',
+    ms_start:'เริ่มซ้อม', ms_peak:(n)=>`Peak Week (สัปดาห์ที่ ${n})`,
+    ms_taper:'เริ่ม Taper', ms_race:'Race Day!',
+    ms_peak_sub:(km)=>`ระยะสูงสุด ${km} km`,
+    ms_taper_sub:'ลดระยะก่อนแข่ง เน้นพักผ่อนและฟื้นตัว',
+    ms_start_sub:(days,km)=>`${days} วัน/สัปดาห์ · ${km} km สัปดาห์แรก`,
+    ms_recovery_sub:(km)=>`ลดระยะลง ~25% · ${km} km`,
+    guide_zones_title:'Training Zones ของคุณ',
+    guide_zones_sub_default:'สร้างแผนการวิ่งก่อนเพื่อดู Pace Zone ส่วนตัว',
+    guide_zones_sub_plan:(dl,goal)=>`คำนวณจากแผน ${dl} · เป้าหมาย ${goal}`,
+    guide_no_plan_btn:'ไปสร้างแผน →',
+    guide_no_plan_text:'สร้างแผนการวิ่งก่อน แล้ว Pace Zone จะคำนวณตาม Goal Time ของคุณโดยอัตโนมัติ',
+    guide_ref_title:'คู่มือแต่ละ Training Zone', guide_ref_sub:'ความหมาย การใช้งาน และประโยชน์ของแต่ละ Zone',
+    guide_tips_title:'หลักการฝึกซ้อมที่สำคัญ', guide_tips_sub:'Tips จาก Evidence-based Running Science',
+    calc_title:'Pace Calculator', calc_sub:'คำนวณ Pace, Split และเวลาคาดการณ์ทุกระยะ',
+    calc_dist_label:'ระยะทาง', calc_time_label:'เวลาเป้าหมาย',
+    calc_pred_title:'🏃 Race Predictions',
+    calc_pred_sub:'ถ้าวิ่งระยะนี้ได้ตามเป้า คาดว่าจะจบระยะอื่นได้ประมาณ (Riegel\'s Formula)',
+    calc_split_title:'📊 Split Table (Even Pace)',
+    zones_title:'Training Zones', zones_sub:'โซนความเร็วฝึกซ้อมที่คำนวณจาก Pace เป้าหมาย',
+    zones_no_plan:'ใส่ระยะทางและเวลาด้านบนเพื่อดู Training Zones',
+    xl_week:'สัปดาห์', xl_date:'วันที่', xl_day:'วัน', xl_type:'ประเภทการซ้อม', xl_detail:'รายละเอียด',
+    xl_plan_km:'ระยะแผน (km)', xl_plan_pace:'Pace แผน (/km)', xl_duration:'ระยะเวลา/Session (แผน)',
+    xl_actual_km:'★ ระยะจริง (km)', xl_actual_time:'★ เวลาจริง (นาที)', xl_actual_pace:'Pace จริง (/km)', xl_result:'ผลการวิ่ง',
+    xl_hint_actual_km:'กรอกระยะที่วิ่งได้จริง', xl_hint_actual_time:'กรอกเวลารวม เช่น 45.5 = 45:30',
+    xl_hint_pace:'คำนวณอัตโนมัติ', xl_hint_result:'คำนวณอัตโนมัติ',
+    xl_waiting:'รอบันทึก', xl_pass:'✓ ผ่าน', xl_fail:'✗ ไม่ผ่าน',
+    xl_sum_date_range:(s,e)=>`${s} - ${e}`,
+    xl_sum_type_train:'Training Week', xl_sum_type_recovery:'Recovery Week 💤', xl_sum_type_race:'Race Week 🏁',
+    xl_sum_total:'รวมทั้งหมด',
+    xl_s2_week:'สัปดาห์', xl_s2_range:'ช่วงวันที่', xl_s2_type:'ประเภท',
+    xl_s2_plan:'ระยะแผน (km)', xl_s2_actual:'ระยะจริง (km)', xl_s2_pct:'% จบ',
+    xl_s2_sessions:'Sessions ผ่าน / แผน', xl_s2_status:'สถานะ',
+    xl_sheet1:'ตารางซ้อม', xl_sheet2:'สรุปรายสัปดาห์',
+    xl_hint_km:'กม.', xl_hint_minss:'นาที:วิ', xl_hint_est:'นาที:วิ (ประมาณ)',
+  },
+  en: {
+    nav_plan:'📋 Create Plan', nav_summary:'📊 Summary', nav_guide:'📖 Pace Guide', nav_pace:'⚡ Pace Calculator',
+    hero_badge:'🏃 Running Schedule Planner',
+    hero_h1_line1:'Plan Your Running', hero_h1_line2:'Like a Pro',
+    hero_sub:'Build your personal training plan · Calculate Pace · Export anywhere',
+    pr_title:'Your Personal Records',
+    pr_sub:"Enter your best time or estimated finish time — leave blank if you haven't run that distance",
+    pr_example:'Example: 0:25:00 = 25 minutes',
+    goal_title:'Race Goal', goal_sub:'Set your target distance, goal time and race date',
+    goal_dist_label:'Target Distance', goal_date_label:'Race Date',
+    goal_time_label:'Goal Time',
+    goal_time_hint:'Leave blank to auto-calculate from your PRs',
+    dist_5:'5 KM', dist_10:'10 KM', dist_half:'Half Marathon (21.1 KM)', dist_full:'Full Marathon (42.2 KM)',
+    prefs_title:'Training Preferences', prefs_sub:'Set your training days, time and frequency',
+    prefs_days_label:'Select training days',
+    prefs_period_label:'Preferred time of day',
+    period_morning:'Morning', period_evening:'Evening',
+    prefs_time_label:'Run time',
+    prefs_exp_label:'Experience level',
+    exp_beginner:'Beginner', exp_intermediate:'Intermediate', exp_advanced:'Advanced',
+    prefs_start_label:'Training start date',
+    days_count:(n)=>`Selected: ${n} days/week`,
+    days_names:['Sun','Mon','Tue','Wed','Thu','Fri','Sat'],
+    btn_generate:'✨ Generate Training Plan',
+    plan_title_prefix:'Plan', plan_title_goal:'Goal',
+    plan_week:'weeks', plan_daysperweek:'days/week', plan_start:'Start',
+    stats_weeks:'Weeks', stats_days:'Days/Week', stats_km:'Total KM',
+    stats_goal:'Goal Time', stats_pace:'Race Pace /km',
+    pace_guide_title:'🏃 Your Pace Guide',
+    pace_easy:'🟢 Easy Run', pace_tempo:'🟡 Tempo Run', pace_interval:'🔴 Intervals', pace_long:'🔵 Long Run',
+    sched_title:'Weekly Training Schedule',
+    sched_sub_prefix:'weeks', sched_sub_total:'total',
+    export_title:'📥 Export Your Plan',
+    btn_save:'💾 Save Plan', btn_excel:'📊 Download Excel',
+    btn_pdf:'📄 Download PDF Guide', btn_gcal:'📅 Google Calendar (.ics)',
+    alert_gcal:'<strong>How to import Google Calendar:</strong> Download the .ics file → Google Calendar → Settings → Import & Export → Import',
+    saved_title:'💾 Saved plan found',
+    btn_load_plan:'Load this plan', btn_clear_plan:'Delete',
+    day_full:['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'],
+    week_label:(n)=>`Week ${n}`, week_recovery:'💤 Recovery Week', week_race:'🏁 Race Week',
+    type_easy_label:'Easy Run', type_easy_desc:'Conversational pace, aerobic base building',
+    type_tempo_label:'Tempo Run', type_tempo_desc:'Lactate threshold pace, 20–40 min sustained effort',
+    type_interval_label:'Intervals', type_interval_desc:'400–800m × 4–6 reps faster than Race Pace',
+    type_long_label:'Long Run', type_long_desc:'Build endurance at conversational pace',
+    type_taper_label:'Easy Run', type_taper_desc:'Light taper run — reduce volume before race',
+    type_rest_label:'Rest / Cross-Training', type_rest_desc:'Rest day or light cross-training (swim, cycling)',
+    type_race_label:'RACE DAY! 🏁',
+    sum_no_plan_title:'No training plan yet', sum_no_plan_sub:'Go to "Create Plan" tab to build your schedule first',
+    sum_no_plan_btn:'Create a Plan →',
+    sum_sessions:'Sessions', sum_actual_km:'Actual KM', sum_planned_km:'Planned KM', sum_elapsed:'Time Elapsed',
+    sum_cd_label_suffix:'days until Race Day',
+    sum_breakdown_title:'Volume by Training Type', sum_breakdown_sub:'Total km split by training zone',
+    sum_weekly_title:'Weekly Volume', sum_weekly_sub:'km per week (grey = Recovery, red = Race Week)',
+    sum_milestone_title:'Key Milestones', sum_milestone_sub:'Highlights in your training journey',
+    ms_start:'Training Begins', ms_peak:(n)=>`Peak Week (Week ${n})`,
+    ms_taper:'Taper Begins', ms_race:'Race Day!',
+    ms_peak_sub:(km)=>`Highest volume ${km} km`,
+    ms_taper_sub:'Reduce volume before race, focus on rest and recovery',
+    ms_start_sub:(days,km)=>`${days} days/week · ${km} km first week`,
+    ms_recovery_sub:(km)=>`Volume reduced ~25% · ${km} km`,
+    guide_zones_title:'Your Training Zones',
+    guide_zones_sub_default:'Create a training plan first to see your personal pace zones',
+    guide_zones_sub_plan:(dl,goal)=>`Calculated from ${dl} plan · Goal ${goal}`,
+    guide_no_plan_btn:'Create a Plan →',
+    guide_no_plan_text:'Create a training plan first, then pace zones will be calculated from your goal time automatically.',
+    guide_ref_title:'Training Zone Guide', guide_ref_sub:'What each zone means, how to use it, and why it matters',
+    guide_tips_title:'Key Training Principles', guide_tips_sub:'Tips from evidence-based running science',
+    calc_title:'Pace Calculator', calc_sub:'Calculate pace, splits and finish time predictions for any distance',
+    calc_dist_label:'Distance', calc_time_label:'Goal Time',
+    calc_pred_title:'🏃 Race Predictions',
+    calc_pred_sub:"If you finish this distance on target, here's what you can expect for other distances (Riegel's Formula)",
+    calc_split_title:'📊 Split Table (Even Pace)',
+    zones_title:'Training Zones', zones_sub:'Training pace zones calculated from your goal pace',
+    zones_no_plan:'Enter a distance and goal time above to see Training Zones',
+    xl_week:'Week', xl_date:'Date', xl_day:'Day', xl_type:'Session Type', xl_detail:'Description',
+    xl_plan_km:'Planned (km)', xl_plan_pace:'Planned Pace (/km)', xl_duration:'Session Duration (planned)',
+    xl_actual_km:'★ Actual (km)', xl_actual_time:'★ Actual Time (min)', xl_actual_pace:'Actual Pace (/km)', xl_result:'Result',
+    xl_hint_actual_km:'Enter actual km run', xl_hint_actual_time:'Enter total minutes e.g. 45.5 = 45:30',
+    xl_hint_pace:'Auto-calculated', xl_hint_result:'Auto-calculated',
+    xl_waiting:'Pending', xl_pass:'✓ Done', xl_fail:'✗ Missed',
+    xl_sum_date_range:(s,e)=>`${s} - ${e}`,
+    xl_sum_type_train:'Training Week', xl_sum_type_recovery:'Recovery Week 💤', xl_sum_type_race:'Race Week 🏁',
+    xl_sum_total:'Total',
+    xl_s2_week:'Week', xl_s2_range:'Date Range', xl_s2_type:'Type',
+    xl_s2_plan:'Planned (km)', xl_s2_actual:'Actual (km)', xl_s2_pct:'% Done',
+    xl_s2_sessions:'Sessions Pass / Planned', xl_s2_status:'Status',
+    xl_sheet1:'Training Schedule', xl_sheet2:'Weekly Summary',
+    xl_hint_km:'km', xl_hint_minss:'min:ss', xl_hint_est:'min:ss (estimate)',
+  }
+};
+let currentLang = localStorage.getItem('lang') || 'th';
+function t(key, ...args) {
+  const val = (I18N[currentLang] || I18N['th'])[key];
+  return typeof val === 'function' ? val(...args) : (val !== undefined ? val : (I18N['th'][key] ?? key));
+}
+function applyLang() {
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.dataset.i18n;
+    const val = (I18N[currentLang] || I18N['th'])[key];
+    if (val !== undefined && typeof val !== 'function') {
+      if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') el.placeholder = val;
+      else el.textContent = val;
+    }
+  });
+  const tabs = document.querySelectorAll('.nav-tab');
+  ['plan','summary','guide','pace'].forEach((id,i) => {
+    if (tabs[i]) tabs[i].textContent = t('nav_'+id);
+  });
+  const heroBadge = document.querySelector('.hero-badge');
+  if (heroBadge) heroBadge.textContent = t('hero_badge');
+  const heroH1 = document.querySelector('.hero-content h1');
+  if (heroH1) heroH1.innerHTML = `${t('hero_h1_line1')}<br><span class="hero-accent">${t('hero_h1_line2')}</span>`;
+  const heroP = document.querySelector('.hero-content>p');
+  if (heroP) heroP.textContent = t('hero_sub');
+  const langBtn = document.getElementById('lang-btn');
+  if (langBtn) langBtn.textContent = currentLang === 'th' ? '🇬🇧 EN' : '🇹🇭 TH';
+  document.querySelectorAll('.day-toggle').forEach(btn => {
+    const day = parseInt(btn.dataset.day);
+    btn.textContent = t('days_names')[day];
+  });
+  const daysCount = document.getElementById('days-count');
+  if (daysCount) daysCount.textContent = t('days_count', selectedDays.length);
+  const goalDistSel = document.getElementById('goal_distance');
+  if (goalDistSel) {
+    goalDistSel.options[0].text = t('dist_5');
+    goalDistSel.options[1].text = t('dist_10');
+    goalDistSel.options[2].text = t('dist_half');
+    goalDistSel.options[3].text = t('dist_full');
+  }
+  const periodSel = document.getElementById('run_period');
+  if (periodSel) {
+    periodSel.options[0].text = t('period_morning');
+    periodSel.options[1].text = t('period_evening');
+  }
+  const expSel = document.getElementById('experience');
+  if (expSel) {
+    expSel.options[0].text = t('exp_beginner');
+    expSel.options[1].text = t('exp_intermediate');
+    expSel.options[2].text = t('exp_advanced');
+  }
+  const gcalAlert = document.getElementById('gcal-alert');
+  if (gcalAlert) gcalAlert.innerHTML = t('alert_gcal');
+  if (scheduleData) {
+    renderSchedule();
+    if (document.getElementById('page-summary').classList.contains('active')) renderSummary();
+    if (document.getElementById('page-guide').classList.contains('active')) renderPaceGuide();
+  }
+  if (document.getElementById('page-pace').classList.contains('active')) calcPace();
+}
+function toggleLang() {
+  currentLang = currentLang === 'th' ? 'en' : 'th';
+  localStorage.setItem('lang', currentLang);
+  applyLang();
+}
+
 let scheduleData = null;
 let selectedDays = [1,3,5,0];
 
@@ -681,7 +941,7 @@ function toggleDay(btn) {
   selectedDays = btn.classList.contains('active')
     ? [...selectedDays, day]
     : selectedDays.filter(d=>d!==day);
-  document.getElementById('days-count').textContent = `เลือกแล้ว: ${selectedDays.length} วัน/สัปดาห์`;
+  document.getElementById('days-count').textContent = t('days_count', selectedDays.length);
 }
 function getPaceZones(rp) { return { easy:rp*1.25, tempo:rp*1.05, interval:rp*0.95, long:rp*1.30 } }
 function getWeeksNeeded(d,exp) {
@@ -689,13 +949,13 @@ function getWeeksNeeded(d,exp) {
 }
 function getRunType(week,total,dayIdx,daysPerWeek) {
   const pct = week/total;
-  if (week >= total-1) return {type:'easy', label:'Easy Run', desc:'Light taper run — reduce volume before race'};
-  if (dayIdx === daysPerWeek-1) return {type:'long', label:'Long Run', desc:'Build endurance at conversational pace'};
+  if (week >= total-1) return {type:'easy', label:t('type_taper_label'), desc:t('type_taper_desc')};
+  if (dayIdx === daysPerWeek-1) return {type:'long', label:t('type_long_label'), desc:t('type_long_desc')};
   if (pct>0.3 && (dayIdx===0 || dayIdx===Math.floor(daysPerWeek/2))) {
-    if (week%3===0) return {type:'interval', label:'Intervals', desc:'400–800m × 4–6 reps faster than Race Pace'};
-    return {type:'tempo', label:'Tempo Run', desc:'Lactate threshold pace, 20–40 min sustained effort'};
+    if (week%3===0) return {type:'interval', label:t('type_interval_label'), desc:t('type_interval_desc')};
+    return {type:'tempo', label:t('type_tempo_label'), desc:t('type_tempo_desc')};
   }
-  return {type:'easy', label:'Easy Run', desc:'Conversational pace, aerobic base building'};
+  return {type:'easy', label:t('type_easy_label'), desc:t('type_easy_desc')};
 }
 function getRunKm(type,week,total,dist) {
   const pct=week/total, m=week%4===3?0.7:1.0;
@@ -756,7 +1016,7 @@ function generateSchedule() {
         const di = sortedDays.indexOf(dow);
         let type,label,desc,km;
         if (isRace && di===sortedDays.length-1 && raceDate) {
-          type='race'; label='RACE DAY! 🏁';
+          type='race'; label=t('type_race_label');
           desc=`${dist<=10?dist+' KM Race':dist===21.1?'Half Marathon':'Full Marathon'} — Goal: ${fmtTime(goalTime)}`;
           km=dist;
         } else {
@@ -768,7 +1028,7 @@ function generateSchedule() {
         const p = type==='tempo'?zones.tempo:type==='interval'?zones.interval:type==='long'?zones.long:type==='race'?racePace:zones.easy;
         days.push({date:new Date(dd),dow,type,label,desc,km,pace:fmtPace(p),time:runTime,period:runPeriod});
       } else {
-        days.push({date:new Date(dd),dow,type:'rest',label:'Rest / Cross-Training',desc:'Rest day or light cross-training (swim, cycling)',km:0,pace:'-',time:'-',period:'-'});
+        days.push({date:new Date(dd),dow,type:'rest',label:t('type_rest_label'),desc:t('type_rest_desc'),km:0,pace:'-',time:'-',period:'-'});
       }
     }
     weeks.push({weekNum:w+1,start:new Date(ws),days,totalKm:Math.round(days.reduce((s,d)=>s+d.km,0)*10)/10,isDeload,isRaceWeek:isRace});
@@ -784,28 +1044,29 @@ function renderSchedule() {
   const sd = scheduleData;
   document.getElementById('result-section').style.display = 'block';
   const dl = sd.dist<=5?'5 KM':sd.dist<=10?'10 KM':sd.dist<=21.1?'Half Marathon':'Full Marathon';
-  document.getElementById('plan-title').textContent = `แผน ${dl} — เป้าหมาย ${fmtTime(sd.goalTime)}`;
-  document.getElementById('plan-subtitle').textContent = `${sd.totalWeeks} สัปดาห์ · ${sd.selectedDays.length} วัน/สัปดาห์ · เริ่ม ${sd.startDate.toLocaleDateString('th-TH')}`;
-  document.getElementById('schedule-subtitle').textContent = `${sd.weeks.length} สัปดาห์ · รวม ${sd.totalKm} km`;
+  const locale = currentLang === 'en' ? 'en-GB' : 'th-TH';
+  document.getElementById('plan-title').textContent = `${t('plan_title_prefix')} ${dl} — ${t('plan_title_goal')} ${fmtTime(sd.goalTime)}`;
+  document.getElementById('plan-subtitle').textContent = `${sd.totalWeeks} ${t('plan_week')} · ${sd.selectedDays.length} ${t('plan_daysperweek')} · ${t('plan_start')} ${sd.startDate.toLocaleDateString(locale)}`;
+  document.getElementById('schedule-subtitle').textContent = `${sd.weeks.length} ${t('sched_sub_prefix')} · ${t('sched_sub_total')} ${sd.totalKm} km`;
 
   document.getElementById('stats-grid').innerHTML = `
-    <div class="stat-card"><div class="stat-value">${sd.totalWeeks}</div><div class="stat-label">สัปดาห์</div></div>
-    <div class="stat-card"><div class="stat-value">${sd.selectedDays.length}</div><div class="stat-label">วัน/สัปดาห์</div></div>
-    <div class="stat-card"><div class="stat-value">${Math.round(sd.totalKm)}</div><div class="stat-label">KM รวม</div></div>
-    <div class="stat-card"><div class="stat-value">${fmtTime(sd.goalTime)}</div><div class="stat-label">เป้าหมาย</div></div>
-    <div class="stat-card"><div class="stat-value">${fmtPace(sd.racePace)}</div><div class="stat-label">Race Pace /km</div></div>`;
+    <div class="stat-card"><div class="stat-value">${sd.totalWeeks}</div><div class="stat-label">${t('stats_weeks')}</div></div>
+    <div class="stat-card"><div class="stat-value">${sd.selectedDays.length}</div><div class="stat-label">${t('stats_days')}</div></div>
+    <div class="stat-card"><div class="stat-value">${Math.round(sd.totalKm)}</div><div class="stat-label">${t('stats_km')}</div></div>
+    <div class="stat-card"><div class="stat-value">${fmtTime(sd.goalTime)}</div><div class="stat-label">${t('stats_goal')}</div></div>
+    <div class="stat-card"><div class="stat-value">${fmtPace(sd.racePace)}</div><div class="stat-label">${t('stats_pace')}</div></div>`;
 
   document.getElementById('pace-guide').innerHTML = `
-    <div class="pace-item"><div class="pace-label">🟢 Easy Run</div><div class="pace-value">${fmtPace(sd.zones.easy)} /km</div></div>
-    <div class="pace-item tempo"><div class="pace-label">🟡 Tempo Run</div><div class="pace-value">${fmtPace(sd.zones.tempo)} /km</div></div>
-    <div class="pace-item interval"><div class="pace-label">🔴 Intervals</div><div class="pace-value">${fmtPace(sd.zones.interval)} /km</div></div>
-    <div class="pace-item long"><div class="pace-label">🔵 Long Run</div><div class="pace-value">${fmtPace(sd.zones.long)} /km</div></div>`;
+    <div class="pace-item"><div class="pace-label">${t('pace_easy')}</div><div class="pace-value">${fmtPace(sd.zones.easy)} /km</div></div>
+    <div class="pace-item tempo"><div class="pace-label">${t('pace_tempo')}</div><div class="pace-value">${fmtPace(sd.zones.tempo)} /km</div></div>
+    <div class="pace-item interval"><div class="pace-label">${t('pace_interval')}</div><div class="pace-value">${fmtPace(sd.zones.interval)} /km</div></div>
+    <div class="pace-item long"><div class="pace-label">${t('pace_long')}</div><div class="pace-value">${fmtPace(sd.zones.long)} /km</div></div>`;
 
   let html = '';
   sd.weeks.forEach(week => {
-    const wl = week.isRaceWeek ? '🏁 Race Week' : week.isDeload ? '💤 Recovery Week' : `สัปดาห์ที่ ${week.weekNum}`;
+    const wl = week.isRaceWeek ? t('week_race') : week.isDeload ? t('week_recovery') : t('week_label', week.weekNum);
     const end = new Date(week.start.getTime()+6*86400000);
-    const dr = `${week.start.toLocaleDateString('th-TH',{day:'numeric',month:'short'})} — ${end.toLocaleDateString('th-TH',{day:'numeric',month:'short'})}`;
+    const dr = `${week.start.toLocaleDateString(locale,{day:'numeric',month:'short'})} — ${end.toLocaleDateString(locale,{day:'numeric',month:'short'})}`;
     html += `<div class="schedule-week">
       <div class="week-header"><span>${wl} <small style="opacity:.7;font-weight:400">${dr}</small></span><span class="week-badge">${week.totalKm} km</span></div>
       <div class="week-days">`;
@@ -814,7 +1075,7 @@ function renderSchedule() {
       const km = day.km>0 ? `${day.km} km` : '';
       const pa = day.pace!=='-' ? `@ ${day.pace}/km` : '';
       html += `<div class="day-row${isRest?' rest':''}">
-        <div class="day-name">${DAY_TH[day.dow]}<br><small style="font-weight:400;color:var(--muted)">${day.date.toLocaleDateString('th-TH',{day:'numeric',month:'short'})}</small></div>
+        <div class="day-name">${t('day_full')[day.dow]}<br><small style="font-weight:400;color:var(--muted)">${day.date.toLocaleDateString(locale,{day:'numeric',month:'short'})}</small></div>
         <div><span class="run-type type-${day.type}">${day.label}</span></div>
         <div class="run-desc">${day.desc}</div>
         <div class="run-distance">${km}<br><small>${pa}</small></div>
@@ -848,8 +1109,8 @@ function calcPace() {
   const preds = [{d:1,l:'1 KM'},{d:5,l:'5 KM'},{d:10,l:'10 KM'},{d:21.1,l:'Half Marathon'},{d:42.2,l:'Full Marathon'}];
   document.getElementById('calc-predictions').innerHTML = preds.map(p => {
     if (Math.abs(p.d-dist)<0.5) return `<div class="predict-card" style="border:2px solid var(--primary)"><div class="p-dist">★ ${p.l}</div><div class="p-time">${fmtTime(secs)}</div><div class="p-pace">${fmtPace(pace)}/km (current)</div></div>`;
-    const t = predict(secs,dist,p.d); if (!t) return '';
-    return `<div class="predict-card"><div class="p-dist">${p.l}</div><div class="p-time">${fmtTime(t)}</div><div class="p-pace">${fmtPace(t/p.d)}/km</div></div>`;
+    const pt = predict(secs,dist,p.d); if (!pt) return '';
+    return `<div class="predict-card"><div class="p-dist">${p.l}</div><div class="p-time">${fmtTime(pt)}</div><div class="p-pace">${fmtPace(pt/p.d)}/km</div></div>`;
   }).join('');
 
   const step = dist<=10?1:5;
@@ -865,10 +1126,10 @@ function calcPace() {
   const z = getPaceZones(pace);
   document.getElementById('zones-from-calc').innerHTML = `
     <div class="pace-guide">
-      <div class="pace-item"><div class="pace-label">🟢 Easy Run</div><div class="pace-value">${fmtPace(z.easy)} /km</div><div style="font-size:.75em;color:var(--muted);margin-top:3px">Zone 1-2 · RPE 4-5</div></div>
-      <div class="pace-item tempo"><div class="pace-label">🟡 Tempo Run</div><div class="pace-value">${fmtPace(z.tempo)} /km</div><div style="font-size:.75em;color:var(--muted);margin-top:3px">Zone 3-4 · RPE 7-8</div></div>
-      <div class="pace-item interval"><div class="pace-label">🔴 Intervals</div><div class="pace-value">${fmtPace(z.interval)} /km</div><div style="font-size:.75em;color:var(--muted);margin-top:3px">Zone 5 · RPE 8-9</div></div>
-      <div class="pace-item long"><div class="pace-label">🔵 Long Run</div><div class="pace-value">${fmtPace(z.long)} /km</div><div style="font-size:.75em;color:var(--muted);margin-top:3px">Zone 2 · RPE 5-6</div></div>
+      <div class="pace-item"><div class="pace-label">${t('pace_easy')}</div><div class="pace-value">${fmtPace(z.easy)} /km</div><div style="font-size:.75em;color:var(--muted);margin-top:3px">Zone 1-2 · RPE 4-5</div></div>
+      <div class="pace-item tempo"><div class="pace-label">${t('pace_tempo')}</div><div class="pace-value">${fmtPace(z.tempo)} /km</div><div style="font-size:.75em;color:var(--muted);margin-top:3px">Zone 3-4 · RPE 7-8</div></div>
+      <div class="pace-item interval"><div class="pace-label">${t('pace_interval')}</div><div class="pace-value">${fmtPace(z.interval)} /km</div><div style="font-size:.75em;color:var(--muted);margin-top:3px">Zone 5 · RPE 8-9</div></div>
+      <div class="pace-item long"><div class="pace-label">${t('pace_long')}</div><div class="pace-value">${fmtPace(z.long)} /km</div><div style="font-size:.75em;color:var(--muted);margin-top:3px">Zone 2 · RPE 5-6</div></div>
     </div>`;
 }
 
@@ -883,11 +1144,12 @@ function renderSummary() {
   document.getElementById('summary-content').style.display = '';
   const sd = scheduleData;
   const dl = sd.dist<=5?'5 KM':sd.dist<=10?'10 KM':sd.dist<=21.1?'Half Marathon':'Full Marathon';
+  const locale = currentLang === 'en' ? 'en-GB' : 'th-TH';
 
   // Hero
-  document.getElementById('sum-title').textContent = `แผน ${dl} — เป้าหมาย ${fmtTime(sd.goalTime)}`;
+  document.getElementById('sum-title').textContent = `${t('plan_title_prefix')} ${dl} — ${t('plan_title_goal')} ${fmtTime(sd.goalTime)}`;
   document.getElementById('sum-subtitle').textContent =
-    `${sd.totalWeeks} สัปดาห์ · ${sd.selectedDays.length} วัน/สัปดาห์ · เริ่ม ${sd.startDate.toLocaleDateString('th-TH')}`;
+    `${sd.totalWeeks} ${t('plan_week')} · ${sd.selectedDays.length} ${t('plan_daysperweek')} · ${t('plan_start')} ${sd.startDate.toLocaleDateString(locale)}`;
 
   // Count run sessions
   let totalSessions = 0;
@@ -895,11 +1157,11 @@ function renderSummary() {
   const avgWeekKm = Math.round(sd.totalKm / sd.totalWeeks);
 
   document.getElementById('sum-stats').innerHTML = `
-    <div class="sum-stat"><div class="v">${sd.totalWeeks}</div><div class="l">สัปดาห์</div></div>
-    <div class="sum-stat"><div class="v">${Math.round(sd.totalKm)}</div><div class="l">KM รวม</div></div>
-    <div class="sum-stat"><div class="v">${totalSessions}</div><div class="l">Sessions</div></div>
-    <div class="sum-stat"><div class="v">${avgWeekKm}</div><div class="l">KM/สัปดาห์ (เฉลี่ย)</div></div>
-    <div class="sum-stat"><div class="v">${fmtPace(sd.racePace)}</div><div class="l">Race Pace /km</div></div>`;
+    <div class="sum-stat"><div class="v">${sd.totalWeeks}</div><div class="l">${t('stats_weeks')}</div></div>
+    <div class="sum-stat"><div class="v">${Math.round(sd.totalKm)}</div><div class="l">${t('stats_km')}</div></div>
+    <div class="sum-stat"><div class="v">${totalSessions}</div><div class="l">${t('sum_sessions')}</div></div>
+    <div class="sum-stat"><div class="v">${avgWeekKm}</div><div class="l">KM/${t('plan_week')} (avg)</div></div>
+    <div class="sum-stat"><div class="v">${fmtPace(sd.racePace)}</div><div class="l">${t('stats_pace')}</div></div>`;
 
   // Countdown
   let cdHtml = '';
@@ -910,11 +1172,11 @@ function renderSummary() {
     cdHtml = days > 0
       ? `<div class="countdown-box" style="margin-bottom:22px">
            <div class="cd-num">${days}</div>
-           <div class="cd-label">วันจนถึง Race Day · ${sd.raceDate.toLocaleDateString('th-TH',{day:'numeric',month:'long',year:'numeric'})}</div>
+           <div class="cd-label">${t('sum_cd_label_suffix')} · ${sd.raceDate.toLocaleDateString(locale,{day:'numeric',month:'long',year:'numeric'})}</div>
          </div>`
       : days === 0
       ? `<div class="countdown-box" style="margin-bottom:22px;background:linear-gradient(135deg,#DC3545,#FF6B35)">
-           <div class="cd-num">🏁</div><div class="cd-label">วันนี้คือ Race Day!</div></div>`
+           <div class="cd-num">🏁</div><div class="cd-label">${t('ms_race')}</div></div>`
       : '';
   }
   document.getElementById('sum-countdown-wrap').innerHTML = cdHtml;
@@ -926,16 +1188,17 @@ function renderSummary() {
   }));
   const runTotal = Object.values(typeKm).reduce((s,v)=>s+v,0) || 1;
   const typeInfo = [
-    { key:'easy',     icon:'🟢', label:'Easy Run',   color:'easy'     },
-    { key:'long',     icon:'🔵', label:'Long Run',   color:'long'     },
-    { key:'tempo',    icon:'🟡', label:'Tempo Run',  color:'tempo'    },
-    { key:'interval', icon:'🔴', label:'Intervals',  color:'interval' },
+    { key:'easy',     icon:'🟢', label:t('type_easy_label'),     color:'easy'     },
+    { key:'long',     icon:'🔵', label:t('type_long_label'),     color:'long'     },
+    { key:'tempo',    icon:'🟡', label:t('type_tempo_label'),    color:'tempo'    },
+    { key:'interval', icon:'🔴', label:t('type_interval_label'), color:'interval' },
   ];
-  document.getElementById('sum-type-breakdown').innerHTML = typeInfo.map(t => `
-    <div class="type-box ${t.color}">
-      <div class="tb-name">${t.icon} ${t.label}</div>
-      <div class="tb-km">${Math.round(typeKm[t.key])} km</div>
-      <div class="tb-pct">${Math.round(typeKm[t.key]/runTotal*100)}% ของระยะรวม</div>
+  const pctSuffix = currentLang === 'en' ? ' of total' : ' ของระยะรวม';
+  document.getElementById('sum-type-breakdown').innerHTML = typeInfo.map(ti => `
+    <div class="type-box ${ti.color}">
+      <div class="tb-name">${ti.icon} ${ti.label}</div>
+      <div class="tb-km">${Math.round(typeKm[ti.key])} km</div>
+      <div class="tb-pct">${Math.round(typeKm[ti.key]/runTotal*100)}%${pctSuffix}</div>
     </div>`).join('');
 
   // Weekly bars
@@ -956,36 +1219,35 @@ function renderSummary() {
   const milestones = [];
 
   milestones.push({ icon:'🚀', type:'normal',
-    date: sd.startDate.toLocaleDateString('th-TH',{day:'numeric',month:'short'}),
-    title:'เริ่มซ้อม', sub:`${sd.selectedDays.length} วัน/สัปดาห์ · ${sd.weeks[0].totalKm} km สัปดาห์แรก` });
+    date: sd.startDate.toLocaleDateString(locale,{day:'numeric',month:'short'}),
+    title:t('ms_start'), sub:t('ms_start_sub', sd.selectedDays.length, sd.weeks[0].totalKm) });
 
   sd.weeks.filter(w=>w.isDeload).forEach(w => {
-    const end = new Date(w.start.getTime()+6*86400000);
     milestones.push({ icon:'💤', type:'deload',
-      date: w.start.toLocaleDateString('th-TH',{day:'numeric',month:'short'}),
-      title:`Recovery Week ${w.weekNum}`, sub:`ลดระยะลง ~25% · ${w.totalKm} km` });
+      date: w.start.toLocaleDateString(locale,{day:'numeric',month:'short'}),
+      title:`Recovery Week ${w.weekNum}`, sub:t('ms_recovery_sub', w.totalKm) });
   });
 
   milestones.push({ icon:'🔥', type:'normal',
-    date: peakWeek.start.toLocaleDateString('th-TH',{day:'numeric',month:'short'}),
-    title:`Peak Week (สัปดาห์ที่ ${peakWeek.weekNum})`, sub:`ระยะสูงสุด ${peakWeek.totalKm} km` });
+    date: peakWeek.start.toLocaleDateString(locale,{day:'numeric',month:'short'}),
+    title:t('ms_peak', peakWeek.weekNum), sub:t('ms_peak_sub', peakWeek.totalKm) });
 
   const taperIdx = sd.weeks.length - 2;
   if (taperIdx >= 0 && sd.weeks[taperIdx]) {
     milestones.push({ icon:'⬇️', type:'normal',
-      date: sd.weeks[taperIdx].start.toLocaleDateString('th-TH',{day:'numeric',month:'short'}),
-      title:'เริ่ม Taper', sub:'ลดระยะก่อนแข่ง เน้นพักผ่อนและฟื้นตัว' });
+      date: sd.weeks[taperIdx].start.toLocaleDateString(locale,{day:'numeric',month:'short'}),
+      title:t('ms_taper'), sub:t('ms_taper_sub') });
   }
 
   if (sd.raceDate) {
     milestones.push({ icon:'🏁', type:'race',
-      date: sd.raceDate.toLocaleDateString('th-TH',{day:'numeric',month:'short'}),
-      title:'Race Day!', sub:`${dl} · เป้าหมาย ${fmtTime(sd.goalTime)}` });
+      date: sd.raceDate.toLocaleDateString(locale,{day:'numeric',month:'short'}),
+      title:t('ms_race'), sub:`${dl} · ${t('plan_title_goal')} ${fmtTime(sd.goalTime)}` });
   }
 
   milestones.sort((a,b) => {
-    const pa = sd.weeks.findIndex(w=>w.start.toLocaleDateString('th-TH',{day:'numeric',month:'short'})===a.date);
-    const pb = sd.weeks.findIndex(w=>w.start.toLocaleDateString('th-TH',{day:'numeric',month:'short'})===b.date);
+    const pa = sd.weeks.findIndex(w=>w.start.toLocaleDateString(locale,{day:'numeric',month:'short'})===a.date);
+    const pb = sd.weeks.findIndex(w=>w.start.toLocaleDateString(locale,{day:'numeric',month:'short'})===b.date);
     return pa - pb;
   });
 
@@ -1003,17 +1265,31 @@ function renderSummary() {
 function renderPaceGuide() {
   const hasPlan = !!scheduleData;
   const sd = scheduleData;
+  if (!hasPlan) {
+    // restore subtitle default text
+    const sub = document.getElementById('guide-zones-subtitle');
+    sub.setAttribute('data-i18n','guide_zones_sub_default');
+    sub.textContent = t('guide_zones_sub_default');
+    document.getElementById('guide-zones-content').innerHTML = `
+      <div class="pg-no-plan">
+        <div style="font-size:2.5em;margin-bottom:10px">🏃</div>
+        <p data-i18n="guide_no_plan_text">${t('guide_no_plan_text')}</p>
+        <button class="btn btn-primary btn-sm" data-i18n="guide_no_plan_btn" style="margin-top:14px" onclick="switchPage('plan')">${t('guide_no_plan_btn')}</button>
+      </div>`;
+    return;
+  }
 
   if (hasPlan) {
     const dl = sd.dist<=5?'5 KM':sd.dist<=10?'10 KM':sd.dist<=21.1?'Half Marathon':'Full Marathon';
-    document.getElementById('guide-zones-subtitle').textContent =
-      `คำนวณจากแผน ${dl} · เป้าหมาย ${fmtTime(sd.goalTime)}`;
+    document.getElementById('guide-zones-subtitle').textContent = t('guide_zones_sub_plan', dl, fmtTime(sd.goalTime));
+    // remove data-i18n so applyLang won't overwrite it
+    document.getElementById('guide-zones-subtitle').removeAttribute('data-i18n');
     document.getElementById('guide-zones-content').innerHTML = `
       <div class="pace-guide">
-        <div class="pace-item"><div class="pace-label">🟢 Easy Run</div><div class="pace-value">${fmtPace(sd.zones.easy)} /km</div><div style="font-size:.75em;color:var(--muted);margin-top:3px">Zone 1-2 · RPE 4-5</div></div>
-        <div class="pace-item tempo"><div class="pace-label">🟡 Tempo Run</div><div class="pace-value">${fmtPace(sd.zones.tempo)} /km</div><div style="font-size:.75em;color:var(--muted);margin-top:3px">Zone 3-4 · RPE 7-8</div></div>
-        <div class="pace-item interval"><div class="pace-label">🔴 Intervals</div><div class="pace-value">${fmtPace(sd.zones.interval)} /km</div><div style="font-size:.75em;color:var(--muted);margin-top:3px">Zone 5 · RPE 8-9</div></div>
-        <div class="pace-item long"><div class="pace-label">🔵 Long Run</div><div class="pace-value">${fmtPace(sd.zones.long)} /km</div><div style="font-size:.75em;color:var(--muted);margin-top:3px">Zone 2 · RPE 5-6</div></div>
+        <div class="pace-item"><div class="pace-label">${t('pace_easy')}</div><div class="pace-value">${fmtPace(sd.zones.easy)} /km</div><div style="font-size:.75em;color:var(--muted);margin-top:3px">Zone 1-2 · RPE 4-5</div></div>
+        <div class="pace-item tempo"><div class="pace-label">${t('pace_tempo')}</div><div class="pace-value">${fmtPace(sd.zones.tempo)} /km</div><div style="font-size:.75em;color:var(--muted);margin-top:3px">Zone 3-4 · RPE 7-8</div></div>
+        <div class="pace-item interval"><div class="pace-label">${t('pace_interval')}</div><div class="pace-value">${fmtPace(sd.zones.interval)} /km</div><div style="font-size:.75em;color:var(--muted);margin-top:3px">Zone 5 · RPE 8-9</div></div>
+        <div class="pace-item long"><div class="pace-label">${t('pace_long')}</div><div class="pace-value">${fmtPace(sd.zones.long)} /km</div><div style="font-size:.75em;color:var(--muted);margin-top:3px">Zone 2 · RPE 5-6</div></div>
       </div>`;
     // Fill pace into zone cards
     document.getElementById('zc-easy-pace').innerHTML     = `${fmtPace(sd.zones.easy)}<small> /km</small>`;
@@ -1042,7 +1318,7 @@ function loadSavedPlan() {
   selectedDays = p.selectedDays || [1,3,5,0];
   Object.entries(p.formValues||{}).forEach(([k,v])=>{ const el=document.getElementById(k); if(el) el.value=v; });
   document.querySelectorAll('.day-toggle').forEach(btn => btn.classList.toggle('active', selectedDays.includes(parseInt(btn.dataset.day))));
-  document.getElementById('days-count').textContent = `เลือกแล้ว: ${selectedDays.length} วัน/สัปดาห์`;
+  document.getElementById('days-count').textContent = t('days_count', selectedDays.length);
   scheduleData.startDate = new Date(scheduleData.startDate);
   if (scheduleData.raceDate) scheduleData.raceDate = new Date(scheduleData.raceDate);
   scheduleData.weeks.forEach(w => { w.start=new Date(w.start); w.days.forEach(d=>d.date=new Date(d.date)); });
@@ -1059,7 +1335,7 @@ function checkSavedPlan() {
   const raw = localStorage.getItem('runningPlan'); if (!raw) return;
   const p = JSON.parse(raw), d = p.scheduleData;
   const dl = d.dist<=5?'5KM':d.dist<=10?'10KM':d.dist<=21.1?'Half Marathon':'Full Marathon';
-  const at = new Date(p.savedAt).toLocaleDateString('th-TH',{day:'numeric',month:'short',year:'2-digit',hour:'2-digit',minute:'2-digit'});
+  const at = new Date(p.savedAt).toLocaleDateString(currentLang==='en'?'en-GB':'th-TH',{day:'numeric',month:'short',year:'2-digit',hour:'2-digit',minute:'2-digit'});
   document.getElementById('saved-meta').textContent = `${dl} · เป้าหมาย ${fmtTime(d.goalTime)} · บันทึกเมื่อ ${at}`;
   document.getElementById('saved-banner').style.display = '';
 }
@@ -1106,29 +1382,30 @@ function exportExcel() {
   //  K  Pace จริง (/km)          ← สูตร
   //  L  ผลการวิ่ง                ← สูตร
   // ════════════════════════════════════════
+  const xlLocale = currentLang === 'en' ? 'en-GB' : 'th-TH';
   const ws1 = {};
-  const HDR1 = ['สัปดาห์','วันที่','วัน','ประเภทการซ้อม','รายละเอียด',
-    'ระยะแผน (km)','Pace แผน (/km)','ระยะเวลา/Session (แผน)',
-    '★ ระยะจริง (km)','★ เวลาจริง (นาที)','Pace จริง (/km)','ผลการวิ่ง'];
+  const HDR1 = [t('xl_week'),t('xl_date'),t('xl_day'),t('xl_type'),t('xl_detail'),
+    t('xl_plan_km'),t('xl_plan_pace'),t('xl_duration'),
+    t('xl_actual_km'),t('xl_actual_time'),t('xl_actual_pace'),t('xl_result')];
   HDR1.forEach((h,c)=>setCell(ws1,0,c,h));
 
   // Sub-header hint row
   const HINT = ['','','','','',
-    'กม.','นาที:วิ','นาที:วิ (ประมาณ)',
-    'กรอกระยะที่วิ่งได้จริง','กรอกเวลารวม เช่น 45.5 = 45:30','คำนวณอัตโนมัติ','คำนวณอัตโนมัติ'];
+    t('xl_hint_km'),t('xl_hint_minss'),t('xl_hint_est'),
+    t('xl_hint_actual_km'),t('xl_hint_actual_time'),t('xl_hint_pace'),t('xl_hint_result')];
   HINT.forEach((h,c)=>setCell(ws1,1,c,h));
 
   let r = 2; // next data row (0-indexed)
   sd.weeks.forEach(week => {
-    const wl = week.isRaceWeek ? 'Race Week'
-             : week.isDeload   ? 'Recovery Week'
-             : `Week ${week.weekNum}`;
+    const wl = week.isRaceWeek ? t('xl_sum_type_race')
+             : week.isDeload   ? t('xl_sum_type_recovery')
+             : `${t('xl_week')} ${week.weekNum}`;
     week.days.forEach(day => {
       const exR = r+1; // Excel row number (1-indexed) for formula text
       const isRun = day.type !== 'rest';
       setCell(ws1, r, 0, wl);
-      setCell(ws1, r, 1, day.date.toLocaleDateString('th-TH'));
-      setCell(ws1, r, 2, DAY_TH[day.dow]);
+      setCell(ws1, r, 1, day.date.toLocaleDateString(xlLocale));
+      setCell(ws1, r, 2, t('day_full')[day.dow]);
       setCell(ws1, r, 3, day.label);
       setCell(ws1, r, 4, day.desc);
       if (isRun) {
@@ -1144,11 +1421,11 @@ function exportExcel() {
           `TEXT(INT(J${exR}/I${exR}),"0")&":"&`+
           `TEXT((J${exR}/I${exR}-INT(J${exR}/I${exR}))*60,"00"))`,
           's', '');
-        // L — ผลการวิ่ง formula: ≥90% of planned = ผ่าน
+        // L — result formula: ≥90% of planned = pass
         setFml(ws1, r, 11,
-          `=IF(I${exR}="","รอบันทึก",`+
-          `IF(I${exR}>=${day.km}*0.9,"✓ ผ่าน","✗ ไม่ผ่าน"))`,
-          's', 'รอบันทึก');
+          `=IF(I${exR}="","${t('xl_waiting')}",`+
+          `IF(I${exR}>=${day.km}*0.9,"${t('xl_pass')}","${t('xl_fail')}"))`,
+          's', t('xl_waiting'));
       } else {
         setCell(ws1, r, 5, '-'); setCell(ws1, r, 6, '-');
         setCell(ws1, r, 7, '-'); setCell(ws1, r, 8, '');
@@ -1164,7 +1441,8 @@ function exportExcel() {
     {wch:12},{wch:13},{wch:20},{wch:18},{wch:20},{wch:15},{wch:15}];
   // Freeze top 2 rows
   ws1['!freeze'] = {xSplit:0, ySplit:2};
-  XLSX.utils.book_append_sheet(wb, ws1, 'ตารางซ้อม');
+  const sheet1Name = t('xl_sheet1');
+  XLSX.utils.book_append_sheet(wb, ws1, sheet1Name);
 
   // ════════════════════════════════════════
   //  SHEET 2 : สรุปรายสัปดาห์
@@ -1178,9 +1456,9 @@ function exportExcel() {
   //  H  สถานะ           ← สูตร
   // ════════════════════════════════════════
   const ws2 = {};
-  const HDR2 = ['สัปดาห์','ช่วงวันที่','ประเภท',
-    'ระยะแผน (km)','ระยะจริง (km)','% จบ',
-    'Sessions ผ่าน / แผน','สถานะ'];
+  const HDR2 = [t('xl_s2_week'),t('xl_s2_range'),t('xl_s2_type'),
+    t('xl_s2_plan'),t('xl_s2_actual'),t('xl_s2_pct'),
+    t('xl_s2_sessions'),t('xl_s2_status')];
   HDR2.forEach((h,c)=>setCell(ws2,0,c,h));
 
   // Each week = 7 rows in ตารางซ้อม, data starts at row 3 (Excel) because of hint row
@@ -1195,15 +1473,15 @@ function exportExcel() {
     const end     = new Date(week.start.getTime()+6*86400000);
     const runDays = week.days.filter(d=>d.type!=='rest').length;
 
-    setCell(ws2, s2Idx, 0, `Week ${week.weekNum}`);
-    setCell(ws2, s2Idx, 1, `${week.start.toLocaleDateString('th-TH')} – ${end.toLocaleDateString('th-TH')}`);
-    setCell(ws2, s2Idx, 2, week.isRaceWeek?'Race Week 🏁':week.isDeload?'Recovery Week 💤':'Training Week');
+    setCell(ws2, s2Idx, 0, `${t('xl_s2_week')} ${week.weekNum}`);
+    setCell(ws2, s2Idx, 1, `${week.start.toLocaleDateString(xlLocale)} – ${end.toLocaleDateString(xlLocale)}`);
+    setCell(ws2, s2Idx, 2, week.isRaceWeek?t('xl_sum_type_race'):week.isDeload?t('xl_sum_type_recovery'):t('xl_sum_type_train'));
     setCell(ws2, s2Idx, 3, week.totalKm, 'n');
 
-    // E: ระยะจริง = sum non-empty I cells from ตารางซ้อม for this week
+    // E: actual km = sum non-empty I cells from training schedule for this week
     setFml(ws2, s2Idx, 4,
-      `=SUMPRODUCT(('ตารางซ้อม'!I${s1Start}:I${s1End}<>"")*`+
-      `IFERROR(VALUE('ตารางซ้อม'!I${s1Start}:I${s1End}),0))`,
+      `=SUMPRODUCT(('${sheet1Name}'!I${s1Start}:I${s1End}<>"")*`+
+      `IFERROR(VALUE('${sheet1Name}'!I${s1Start}:I${s1End}),0))`,
       'n', 0);
 
     // F: % จบ (E/D * 100)
@@ -1211,9 +1489,9 @@ function exportExcel() {
       `=IFERROR(ROUND(E${s2Row}/D${s2Row}*100,1),0)`,
       'n', 0);
 
-    // G: sessions ผ่าน / แผน  e.g. "3/4"
+    // G: sessions pass / planned  e.g. "3/4"
     setFml(ws2, s2Idx, 6,
-      `=COUNTIF('ตารางซ้อม'!L${s1Start}:L${s1End},"✓ ผ่าน")&"/${runDays}"`,
+      `=COUNTIF('${sheet1Name}'!L${s1Start}:L${s1End},"${t('xl_pass')}")&"/${runDays}"`,
       's', `0/${runDays}`);
 
     // H: สถานะ
@@ -1227,7 +1505,7 @@ function exportExcel() {
   const totalIdx = sd.weeks.length + 1;
   const totalRow = sd.weeks.length + 2;
   const totalKm  = sd.weeks.reduce((s,w)=>s+w.totalKm,0);
-  setCell(ws2, totalIdx, 0, 'รวมทั้งหมด');
+  setCell(ws2, totalIdx, 0, t('xl_sum_total'));
   setCell(ws2, totalIdx, 1, '');
   setCell(ws2, totalIdx, 2, '');
   setCell(ws2, totalIdx, 3, Math.round(totalKm*10)/10, 'n');
@@ -1244,7 +1522,7 @@ function exportExcel() {
   ws2['!ref']  = `A1:H${totalRow}`;
   ws2['!cols'] = [{wch:12},{wch:30},{wch:20},{wch:14},{wch:14},{wch:8},{wch:20},{wch:20}];
   ws2['!freeze'] = {xSplit:0, ySplit:1};
-  XLSX.utils.book_append_sheet(wb, ws2, 'สรุปรายสัปดาห์');
+  XLSX.utils.book_append_sheet(wb, ws2, t('xl_sheet2'));
 
   const dl = sd.dist<=5?'5KM':sd.dist<=10?'10KM':sd.dist<=21.1?'HalfMarathon':'FullMarathon';
   XLSX.writeFile(wb, `RunningSchedule_${dl}_${new Date().toISOString().split('T')[0]}.xlsx`);
@@ -1366,7 +1644,15 @@ window.onload = function() {
   document.getElementById('race_date').value = rd.toISOString().split('T')[0];
   checkSavedPlan();
   calcPace();
+  applyLang();
 };
 </script>
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <span class="footer-credit">Built with ❤️ by <a href="https://instagram.com/mothhhhh" target="_blank" rel="noopener">@mothhhhh</a></span>
+    <span class="footer-right">🏃 Running Schedule Planner</span>
+  </div>
+</footer>
 </body>
 </html>
