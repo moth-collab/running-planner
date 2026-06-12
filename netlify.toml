@@ -1,0 +1,7 @@
+# Netlify configuration for running-planner
+# Static single-page site (index.html at repo root) — no build step.
+
+[build]
+  # Serve the repository root as-is; nothing to compile.
+  publish = "."
+  command = ""
