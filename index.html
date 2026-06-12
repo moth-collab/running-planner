@@ -358,6 +358,7 @@ select option{background:#1A2540;color:var(--text)}
 .aff-reason{font-size:.8em;color:var(--text2);line-height:1.45;margin-top:3px}
 .aff-btn{margin-top:8px;display:inline-block;color:var(--primary);font-weight:700;font-size:.82em}
 .aff-disclaimer{font-size:.75em;color:var(--text2);text-align:center;line-height:1.6;margin-top:6px}
+.evt-cat{font-size:.97em;font-weight:700;color:var(--secondary);margin-bottom:14px}
 
 /* ─── DONATE ─── */
 .donate-fab{position:fixed;bottom:28px;right:28px;z-index:300;background:linear-gradient(135deg,#FF6B35,#F59E0B);color:#fff;border:none;border-radius:50px;padding:12px 20px;font-size:.88em;font-weight:700;cursor:pointer;box-shadow:0 4px 20px rgba(255,107,53,.5);display:flex;align-items:center;gap:8px;font-family:inherit;transition:all .2s;white-space:nowrap}
@@ -399,6 +400,7 @@ select option{background:#1A2540;color:var(--text)}
     <button class="nav-tab" onclick="switchPage('summary')">📊 สรุปแผน</button>
     <button class="nav-tab" onclick="switchPage('guide')">📖 Pace Guide</button>
     <button class="nav-tab" onclick="switchPage('pace')">⚡ Pace Calculator</button>
+    <button class="nav-tab" onclick="switchPage('events')">📍 งานวิ่ง</button>
     <button class="nav-tab" onclick="switchPage('shop')">🛍️ Shop</button>
     <div style="flex:1"></div>
     <button class="lang-toggle" onclick="toggleLang()" id="lang-btn">
@@ -862,7 +864,7 @@ select option{background:#1A2540;color:var(--text)}
 /* ── i18n ── */
 const I18N = {
   th: {
-    nav_plan:'📋 สร้างแผน', nav_summary:'📊 สรุปแผน', nav_guide:'📖 Pace Guide', nav_pace:'⚡ Pace Calculator',
+    nav_plan:'📋 สร้างแผน', nav_summary:'📊 สรุปแผน', nav_guide:'📖 Pace Guide', nav_pace:'⚡ Pace Calculator', nav_events:'📍 งานวิ่ง', nav_shop:'🛍️ Shop',
     hero_badge:'🏃 Running Schedule Planner',
     hero_h1_line1:'วางแผนการวิ่ง', hero_h1_line2:'อย่างมืออาชีพ',
     hero_sub:'สร้างตารางซ้อมส่วนตัว · คำนวณ Pace · Export ทุกรูปแบบ',
@@ -974,9 +976,14 @@ const I18N = {
     install_text:'📲 ติดตั้งเป็นแอป เปิดเร็ว + เตือนวันซ้อม',
     install_btn:'ติดตั้ง',
     cal_btn:'📅 เพิ่มลงปฏิทิน',
+    evt_title:'ค้นหางานวิ่งทั่วไทย',
+    evt_sub:'รวมแหล่งค้นหาและสมัครงานวิ่งที่อัปเดตสดทุกวัน — เช็กสถานะเปิดรับ/เต็ม ได้ที่หน้างานในแต่ละเว็บโดยตรง',
+    evt_cat_find:'📅 ค้นหา & ปฏิทินงานวิ่ง', evt_cat_reg:'📝 ระบบรับสมัครงานวิ่ง',
+    evt_visit:'เปิดเว็บ →',
+    evt_note:'* เว็บด้านบนเป็นบริการภายนอกที่ดูแลโดยผู้ให้บริการแต่ละราย — ข้อมูลงาน วันที่ และสถานะรับสมัครจะอัปเดตที่ต้นทาง',
   },
   en: {
-    nav_plan:'📋 Create Plan', nav_summary:'📊 Summary', nav_guide:'📖 Pace Guide', nav_pace:'⚡ Pace Calculator',
+    nav_plan:'📋 Create Plan', nav_summary:'📊 Summary', nav_guide:'📖 Pace Guide', nav_pace:'⚡ Pace Calculator', nav_events:'📍 Races', nav_shop:'🛍️ Shop',
     hero_badge:'🏃 Running Schedule Planner',
     hero_h1_line1:'Plan Your Running', hero_h1_line2:'Like a Pro',
     hero_sub:'Build your personal training plan · Calculate Pace · Export anywhere',
@@ -1088,6 +1095,11 @@ const I18N = {
     install_text:'📲 Install as an app — faster access + run reminders',
     install_btn:'Install',
     cal_btn:'📅 Add to Calendar',
+    evt_title:'Find Running Events in Thailand',
+    evt_sub:'Curated places to find and sign up for races — check live open/full status on each site',
+    evt_cat_find:'📅 Find & race calendars', evt_cat_reg:'📝 Race registration',
+    evt_visit:'Open site →',
+    evt_note:'* These are external services maintained by their providers — event details, dates and registration status update at the source.',
   }
 };
 let currentLang = localStorage.getItem('lang') || 'th';
@@ -1105,7 +1117,7 @@ function applyLang() {
     }
   });
   const tabs = document.querySelectorAll('.nav-tab');
-  ['plan','summary','guide','pace'].forEach((id,i) => {
+  ['plan','summary','guide','pace','events','shop'].forEach((id,i) => {
     if (tabs[i]) tabs[i].textContent = t('nav_'+id);
   });
   const heroBadge = document.querySelector('.hero-badge');
@@ -1199,9 +1211,6 @@ function toggleLang() {
   if (els.sub)    els.sub.textContent    = isTh ? 'หากแอปนี้มีประโยชน์ ช่วย support ได้เลยนะ 🙏' : 'If this app helped you, consider buying me a coffee 🙏';
   if (els.thanks) els.thanks.textContent = isTh ? 'ขอบคุณมากๆ ที่ช่วย support ครับ/ค่ะ 🧡'    : 'Thank you so much for your support! 🧡';
   if (els.fab)    els.fab.textContent    = isTh ? 'สนับสนุน' : 'Support';
-  // Update nav tab
-  const shopTab = document.querySelectorAll('.nav-tab')[4];
-  if (shopTab) shopTab.textContent = isTh ? '🛍️ Shop' : '🛍️ Shop';
   applyShopLang();
 }
 
@@ -1209,7 +1218,7 @@ let scheduleData = null;
 let selectedDays = [1,3,5,0];
 
 /* ── NAV ── */
-const PAGE_ORDER = ['plan','summary','guide','pace','shop'];
+const PAGE_ORDER = ['plan','summary','guide','pace','events','shop'];
 function switchPage(id) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
@@ -1673,6 +1682,7 @@ function renderAffiliate() {
     : '* Affiliate links — buying through them supports the app at no extra cost to you 🧡';
 }
 function trackAff(id) { try { if (window.gtag) gtag('event','affiliate_click',{ item_id:id, plan_dist: scheduleData && scheduleData.dist }); } catch(e) {} }
+function trackEvt(id) { try { if (window.gtag) gtag('event','event_source_click',{ source:id }); } catch(e) {} }
 
 /* ── PACE CALCULATOR ── */
 function calcPace() {
@@ -2260,6 +2270,59 @@ window.addEventListener('appinstalled', () => { const b = document.getElementByI
     <span class="footer-right">🏃 Running Schedule Planner</span>
   </div>
 </footer>
+<!-- PAGE: EVENTS -->
+<div class="page" id="page-events">
+  <div class="card" style="text-align:center;padding:28px 20px;background:linear-gradient(135deg,#141E30,#0F1729);border-color:rgba(255,107,53,.2)">
+    <div style="font-size:.78em;font-weight:700;color:var(--primary);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px">📍 RUNNING EVENTS</div>
+    <h2 style="font-size:1.5em;font-weight:900;color:#fff;margin-bottom:8px" data-i18n="evt_title">ค้นหางานวิ่งทั่วไทย</h2>
+    <p style="font-size:.85em;color:rgba(255,255,255,.55);max-width:560px;margin:0 auto;line-height:1.6" data-i18n="evt_sub">รวมแหล่งค้นหาและสมัครงานวิ่งที่อัปเดตสดทุกวัน — เช็กสถานะเปิดรับ/เต็ม ได้ที่หน้างานในแต่ละเว็บโดยตรง</p>
+  </div>
+
+  <div class="card">
+    <h3 class="evt-cat" data-i18n="evt_cat_find">📅 ค้นหา & ปฏิทินงานวิ่ง</h3>
+    <div class="aff-grid">
+      <a class="aff-item" href="https://patrunning.com/" target="_blank" rel="noopener" onclick="trackEvt('patrunning')">
+        <div class="aff-ic">🗓️</div>
+        <div class="aff-body"><div class="aff-name">วิ่งไหนดี · PatRunning</div><div class="aff-reason">ปฏิทินรวมงานวิ่งรายเดือนทั่วไทย ปี 2569 ค้นง่าย แยกตามเดือน/จังหวัด</div><div class="aff-btn" data-i18n="evt_visit">เปิดเว็บ →</div></div>
+      </a>
+      <a class="aff-item" href="https://www.runlah.com/th" target="_blank" rel="noopener" onclick="trackEvt('runlah')">
+        <div class="aff-ic">📆</div>
+        <div class="aff-body"><div class="aff-name">RUNLAH</div><div class="aff-reason">ค้นหาและสมัครงานวิ่งทั่วไทย ดูตามสัปดาห์ / จังหวัด / ประเภท</div><div class="aff-btn" data-i18n="evt_visit">เปิดเว็บ →</div></div>
+      </a>
+      <a class="aff-item" href="https://www.thaijogging.org/event-calendar/" target="_blank" rel="noopener" onclick="trackEvt('thaijogging')">
+        <div class="aff-ic">🏅</div>
+        <div class="aff-body"><div class="aff-name">ThaiJogging</div><div class="aff-reason">ปฏิทินงานวิ่งโดยมูลนิธิสมาพันธ์ชมรมเดิน-วิ่งเพื่อสุขภาพไทย</div><div class="aff-btn" data-i18n="evt_visit">เปิดเว็บ →</div></div>
+      </a>
+      <a class="aff-item" href="https://www.jogandjoy.com/thailand-running-calender" target="_blank" rel="noopener" onclick="trackEvt('jogandjoy')">
+        <div class="aff-ic">🗺️</div>
+        <div class="aff-body"><div class="aff-name">Jog &amp; Joy</div><div class="aff-reason">ปฏิทินงานวิ่งทั่วไทย รวมโปรแกรมเดิน-วิ่งหลากหลาย</div><div class="aff-btn" data-i18n="evt_visit">เปิดเว็บ →</div></div>
+      </a>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3 class="evt-cat" data-i18n="evt_cat_reg">📝 ระบบรับสมัครงานวิ่ง</h3>
+    <div class="aff-grid">
+      <a class="aff-item" href="https://race.thai.run/" target="_blank" rel="noopener" onclick="trackEvt('thairun')">
+        <div class="aff-ic">📝</div>
+        <div class="aff-body"><div class="aff-name">Thai.run</div><div class="aff-reason">ระบบรับสมัครงานวิ่งยอดนิยม สมัคร+จ่ายออนไลน์ เห็นสถานะรับสมัครที่หน้างาน</div><div class="aff-btn" data-i18n="evt_visit">เปิดเว็บ →</div></div>
+      </a>
+      <a class="aff-item" href="https://run.checkrace.com/" target="_blank" rel="noopener" onclick="trackEvt('checkrace')">
+        <div class="aff-ic">✅</div>
+        <div class="aff-body"><div class="aff-name">CheckRace</div><div class="aff-reason">ระบบจัดและรับสมัครงานวิ่งออนไลน์ครบวงจร</div><div class="aff-btn" data-i18n="evt_visit">เปิดเว็บ →</div></div>
+      </a>
+      <a class="aff-item" href="https://www.fanaticrun.com/" target="_blank" rel="noopener" onclick="trackEvt('fanaticrun')">
+        <div class="aff-ic">🎽</div>
+        <div class="aff-body"><div class="aff-name">FanaticRun</div><div class="aff-reason">ระบบรับสมัครงานวิ่งออนไลน์</div><div class="aff-btn" data-i18n="evt_visit">เปิดเว็บ →</div></div>
+      </a>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:4px">
+    <p class="aff-disclaimer" data-i18n="evt_note">* เว็บด้านบนเป็นบริการภายนอกที่ดูแลโดยผู้ให้บริการแต่ละราย — ข้อมูลงาน วันที่ และสถานะรับสมัครจะอัปเดตที่ต้นทาง</p>
+  </div>
+</div>
+
 <!-- PAGE: SHOP -->
 <div class="page" id="page-shop">
   <div class="card" style="text-align:center;padding:28px 20px;background:linear-gradient(135deg,#141E30,#0F1729);border-color:rgba(255,107,53,.2)">
