@@ -3,7 +3,33 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Running Schedule Planner 🏃</title>
+<title>ตารางซ้อมวิ่งฟรี 5K/10K/ฮาล์ฟ/มาราธอน + คำนวณ Pace | Running Schedule Planner</title>
+<meta name="description" content="สร้างตารางซ้อมวิ่งส่วนตัวฟรี สำหรับ 5K, 10K, ฮาล์ฟมาราธอน และฟูลมาราธอน คำนวณ Pace แต่ละโซน บันทึกผลซ้อม และ export ลง Google Calendar / Excel / PDF ได้ ไม่ต้องสมัครสมาชิก">
+<meta name="keywords" content="ตารางซ้อมวิ่ง, แผนซ้อมวิ่ง, ตารางวิ่งมาราธอน, ตารางซ้อมฮาล์ฟมาราธอน, คำนวณเพซ, pace calculator, running training plan">
+<meta name="robots" content="index,follow">
+<meta name="author" content="@mothhhhh">
+<link rel="canonical" href="https://runningplaner.netlify.app/">
+<!-- Open Graph / social (Organic Social is the #1 traffic channel) -->
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://runningplaner.netlify.app/">
+<meta property="og:title" content="ตารางซ้อมวิ่งฟรี + คำนวณ Pace | Running Schedule Planner">
+<meta property="og:description" content="สร้างตารางซ้อมวิ่งส่วนตัวฟรี 5K/10K/ฮาล์ฟ/มาราธอน คำนวณ Pace บันทึกผลซ้อม export ลงปฏิทินได้ ไม่ต้องสมัคร">
+<meta property="og:image" content="https://images.unsplash.com/photo-1552674605-db6ffd4facb5?w=1200&q=80">
+<meta property="og:locale" content="th_TH">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="ตารางซ้อมวิ่งฟรี + คำนวณ Pace | Running Schedule Planner">
+<meta name="twitter:description" content="สร้างตารางซ้อมวิ่งส่วนตัวฟรี 5K/10K/ฮาล์ฟ/มาราธอน คำนวณ Pace บันทึกผลซ้อม">
+<meta name="twitter:image" content="https://images.unsplash.com/photo-1552674605-db6ffd4facb5?w=1200&q=80">
+<!-- PWA -->
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#0A0F1E">
+<link rel="icon" href="/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/icon.svg">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="RunPlanner">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"Running Schedule Planner","url":"https://runningplaner.netlify.app/","applicationCategory":"HealthApplication","operatingSystem":"Any","offers":{"@type":"Offer","price":"0","priceCurrency":"THB"},"description":"สร้างตารางซ้อมวิ่งส่วนตัวฟรี 5K/10K/ฮาล์ฟ/มาราธอน คำนวณ Pace บันทึกผลซ้อม"}</script>
 <!-- Google Analytics GA4 -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-K31Z4WBSYJ"></script>
 <script>
@@ -308,6 +334,17 @@ select option{background:#1A2540;color:var(--text)}
 .log-note{width:100%;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:12px;padding:11px;color:var(--text);font-family:inherit;font-size:.9em;resize:vertical;margin-bottom:16px;line-height:1.5}
 .log-note:focus{outline:none;border-color:var(--primary)}
 .log-actions{display:flex;gap:10px;justify-content:flex-end}
+/* advanced (collapsible) + install banner */
+.adv{margin-bottom:20px;border:1px solid var(--border);border-radius:16px;background:var(--card);overflow:hidden}
+.adv-summary{cursor:pointer;padding:16px 20px;font-weight:700;color:var(--text2);font-size:.9em;list-style:none;user-select:none}
+.adv-summary::-webkit-details-marker{display:none}
+.adv-summary::before{content:'▸';margin-right:9px;display:inline-block;transition:transform .2s}
+.adv[open] .adv-summary::before{transform:rotate(90deg)}
+.adv[open] .adv-summary{border-bottom:1px solid var(--border)}
+.adv-body{padding:18px 18px 4px}
+.adv-body .card{box-shadow:none;border:1px solid var(--border);background:rgba(255,255,255,.02);margin-bottom:14px}
+.install-banner{background:var(--gradient);color:#fff;border-radius:14px;padding:13px 18px;margin-bottom:18px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;font-weight:600;font-size:.9em}
+.install-banner .btn{background:#fff;color:var(--primary);flex-shrink:0}
 
 /* ─── DONATE ─── */
 .donate-fab{position:fixed;bottom:28px;right:28px;z-index:300;background:linear-gradient(135deg,#FF6B35,#F59E0B);color:#fff;border:none;border-radius:50px;padding:12px 20px;font-size:.88em;font-weight:700;cursor:pointer;box-shadow:0 4px 20px rgba(255,107,53,.5);display:flex;align-items:center;gap:8px;font-family:inherit;transition:all .2s;white-space:nowrap}
@@ -361,6 +398,13 @@ select option{background:#1A2540;color:var(--text)}
 <!-- PAGE: PLAN -->
 <div class="page active" id="page-plan">
 
+  <div id="install-banner" style="display:none">
+    <div class="install-banner">
+      <span data-i18n="install_text">📲 ติดตั้งเป็นแอป เปิดเร็ว + เตือนวันซ้อม</span>
+      <button class="btn btn-sm" onclick="installApp()" data-i18n="install_btn">ติดตั้ง</button>
+    </div>
+  </div>
+
   <div id="saved-banner" style="display:none">
     <div class="saved-banner">
       <div>
@@ -392,10 +436,55 @@ select option{background:#1A2540;color:var(--text)}
       <div class="tc-bar"><div class="tc-bar-fill" id="tc-bar-fill" style="width:0%"></div><span class="tc-bar-pct" id="tc-prog-pct">0%</span></div>
       <div class="tc-prog-meta" id="tc-prog-meta"></div>
     </div>
-    <div style="margin-top:14px;text-align:right">
+    <div style="margin-top:14px;display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap">
+      <button class="btn btn-sm btn-google" id="tc-cal-btn" data-i18n="cal_btn" onclick="exportGoogleCalendar()">📅 เพิ่มลงปฏิทิน</button>
       <button class="btn btn-sm btn-primary" id="tc-share-btn" onclick="shareCard()">📲 แชร์ความคืบหน้า</button>
     </div>
   </div>
+
+  <!-- Goal (primary, minimal — fast time-to-value) -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-icon">🎯</div>
+      <div><h2 data-i18n="goal_title">เป้าหมายการแข่งขัน</h2><p data-i18n="goal_sub">เลือกระยะและวันแข่ง แล้วกดสร้างได้เลย — ที่เหลือปรับทีหลังได้</p></div>
+    </div>
+    <div class="form-grid">
+      <div class="form-group">
+        <label data-i18n="goal_dist_label">ระยะทางที่ต้องการวิ่ง</label>
+        <select id="goal_distance">
+          <option value="5">5 KM</option>
+          <option value="10">10 KM</option>
+          <option value="21.1" selected>Half Marathon (21.1 KM)</option>
+          <option value="42.2">Full Marathon (42.2 KM)</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label data-i18n="goal_date_label">วันที่แข่งขัน</label>
+        <input type="date" id="race_date">
+      </div>
+    </div>
+    <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:22px">
+      <button class="btn btn-primary" data-i18n="btn_generate" style="flex:1;min-width:210px;font-size:1.05em;padding:15px 20px" onclick="generateSchedule()">✨ สร้างตารางการวิ่ง</button>
+      <button class="btn btn-ghost" data-i18n="btn_demo" style="font-size:.95em;padding:15px 20px" onclick="demoPlan()">👀 ดูตัวอย่างแผน</button>
+    </div>
+  </div>
+
+  <details class="adv">
+    <summary class="adv-summary" data-i18n="adv_toggle">⚙️ ปรับละเอียด — สถิติ PR, เวลาเป้าหมาย, วันซ้อม (ไม่บังคับ)</summary>
+    <div class="adv-body">
+
+      <!-- Goal time (optional) -->
+      <div class="card">
+        <div class="form-group">
+          <label data-i18n="goal_time_label">เวลาเป้าหมาย (Goal Time)</label>
+          <div class="time-input-group" style="max-width:260px">
+            <input type="number" id="goal_h" placeholder="HH" min="0" max="10">
+            <span>:</span><input type="number" id="goal_m" placeholder="MM" min="0" max="59">
+            <span>:</span><input type="number" id="goal_s" placeholder="SS" min="0" max="59">
+          </div>
+          <small data-i18n="goal_time_hint">เว้นว่างให้ระบบคำนวณจากสถิติของคุณอัตโนมัติ</small>
+        </div>
+      </div>
 
   <!-- PR -->
   <div class="card">
@@ -438,39 +527,6 @@ select option{background:#1A2540;color:var(--text)}
           <span>:</span><input type="number" id="prfull_s" placeholder="SS" min="0" max="59" value="0">
         </div>
       </div>
-    </div>
-  </div>
-
-  <!-- Goal -->
-  <div class="card">
-    <div class="card-header">
-      <div class="card-icon">🎯</div>
-      <div><h2 data-i18n="goal_title">เป้าหมายการแข่งขัน</h2><p data-i18n="goal_sub">ระบุระยะทาง เวลาเป้าหมาย และวันแข่ง</p></div>
-    </div>
-    <div class="form-grid">
-      <div class="form-group">
-        <label data-i18n="goal_dist_label">ระยะทางที่ต้องการวิ่ง</label>
-        <select id="goal_distance">
-          <option value="5">5 KM</option>
-          <option value="10">10 KM</option>
-          <option value="21.1" selected>Half Marathon (21.1 KM)</option>
-          <option value="42.2">Full Marathon (42.2 KM)</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label data-i18n="goal_date_label">วันที่แข่งขัน</label>
-        <input type="date" id="race_date">
-      </div>
-    </div>
-    <div class="section-divider"></div>
-    <div class="form-group">
-      <label data-i18n="goal_time_label">เวลาเป้าหมาย (Goal Time)</label>
-      <div class="time-input-group" style="max-width:260px">
-        <input type="number" id="goal_h" placeholder="HH" min="0" max="10">
-        <span>:</span><input type="number" id="goal_m" placeholder="MM" min="0" max="59">
-        <span>:</span><input type="number" id="goal_s" placeholder="SS" min="0" max="59">
-      </div>
-      <small data-i18n="goal_time_hint">เว้นว่างให้ระบบคำนวณจากสถิติของคุณอัตโนมัติ</small>
     </div>
   </div>
 
@@ -517,11 +573,8 @@ select option{background:#1A2540;color:var(--text)}
     </div>
   </div>
 
-  <div style="text-align:center;margin:28px 0">
-    <button class="btn btn-primary" data-i18n="btn_generate" style="font-size:1.05em;padding:15px 44px" onclick="generateSchedule()">
-      ✨ สร้างตารางการวิ่ง
-    </button>
-  </div>
+    </div>
+  </details>
 
   <!-- Result -->
   <div id="result-section" style="display:none">
@@ -793,7 +846,7 @@ const I18N = {
     pr_title:'สถิติการวิ่งของคุณ (Personal Records)',
     pr_sub:'ใส่เวลาที่ดีที่สุด หรือเวลาที่คาดว่าจะจบ — เว้นว่างได้ถ้ายังไม่เคยวิ่ง',
     pr_example:'ตัวอย่าง: 0:25:00 = 25 นาที',
-    goal_title:'เป้าหมายการแข่งขัน', goal_sub:'ระบุระยะทาง เวลาเป้าหมาย และวันแข่ง',
+    goal_title:'เป้าหมายการแข่งขัน', goal_sub:'เลือกระยะและวันแข่ง แล้วกดสร้างได้เลย — ที่เหลือปรับทีหลังได้',
     goal_dist_label:'ระยะทางที่ต้องการวิ่ง', goal_date_label:'วันที่แข่งขัน',
     goal_time_label:'เวลาเป้าหมาย (Goal Time)',
     goal_time_hint:'เว้นว่างให้ระบบคำนวณจากสถิติของคุณอัตโนมัติ',
@@ -893,6 +946,11 @@ const I18N = {
     log_note_label:'โน้ตเตือนความจำ',
     log_note_ph:'เช่น รู้สึกเหนื่อย, เจ็บเข่า, อากาศร้อน, ฟอร์มดีมาก...',
     log_save:'บันทึก', log_clear:'ล้างข้อมูล', log_saved:'บันทึกแล้ว ✅',
+    btn_demo:'👀 ดูตัวอย่างแผน',
+    adv_toggle:'⚙️ ปรับละเอียด — สถิติ PR, เวลาเป้าหมาย, วันซ้อม (ไม่บังคับ)',
+    install_text:'📲 ติดตั้งเป็นแอป เปิดเร็ว + เตือนวันซ้อม',
+    install_btn:'ติดตั้ง',
+    cal_btn:'📅 เพิ่มลงปฏิทิน',
   },
   en: {
     nav_plan:'📋 Create Plan', nav_summary:'📊 Summary', nav_guide:'📖 Pace Guide', nav_pace:'⚡ Pace Calculator',
@@ -902,7 +960,7 @@ const I18N = {
     pr_title:'Your Personal Records',
     pr_sub:"Enter your best time or estimated finish time — leave blank if you haven't run that distance",
     pr_example:'Example: 0:25:00 = 25 minutes',
-    goal_title:'Race Goal', goal_sub:'Set your target distance, goal time and race date',
+    goal_title:'Race Goal', goal_sub:'Pick a distance and race date, then generate — tweak the rest later',
     goal_dist_label:'Target Distance', goal_date_label:'Race Date',
     goal_time_label:'Goal Time',
     goal_time_hint:'Leave blank to auto-calculate from your PRs',
@@ -1002,6 +1060,11 @@ const I18N = {
     log_note_label:'Reminder note',
     log_note_ph:'e.g. felt tired, knee pain, hot weather, great form...',
     log_save:'Save', log_clear:'Clear', log_saved:'Saved ✅',
+    btn_demo:'👀 See a sample plan',
+    adv_toggle:'⚙️ Fine-tune — PRs, goal time, training days (optional)',
+    install_text:'📲 Install as an app — faster access + run reminders',
+    install_btn:'Install',
+    cal_btn:'📅 Add to Calendar',
   }
 };
 let currentLang = localStorage.getItem('lang') || 'th';
@@ -1247,6 +1310,12 @@ function generateSchedule() {
 
   scheduleData = {dist,goalTime,racePace,zones,experience,runPeriod,runTime,selectedDays,sortedDays,totalWeeks,startDate,raceDate,weeks,pr:{pr5k,pr10k,prhalf,prfull},totalKm:Math.round(weeks.reduce((s,w)=>s+w.totalKm,0)*10)/10,createdAt:new Date().toISOString()};
   renderSchedule();
+}
+
+/* ── DEMO (instant sample plan, zero typing) ── */
+function demoPlan() {
+  document.getElementById('goal_distance').value = '21.1';
+  generateSchedule();
 }
 
 /* ── RENDER ── */
@@ -2101,7 +2170,20 @@ window.onload = function() {
     loadSavedPlan(true);
     document.getElementById('saved-banner').style.display = 'none';
   }
+  if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(()=>{});
 };
+// PWA install prompt (Android / desktop Chrome)
+let deferredPrompt = null;
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault(); deferredPrompt = e;
+  const b = document.getElementById('install-banner'); if (b) b.style.display = '';
+});
+function installApp() {
+  if (!deferredPrompt) return;
+  deferredPrompt.prompt();
+  deferredPrompt.userChoice.finally(() => { deferredPrompt = null; const b = document.getElementById('install-banner'); if (b) b.style.display = 'none'; });
+}
+window.addEventListener('appinstalled', () => { const b = document.getElementById('install-banner'); if (b) b.style.display = 'none'; });
 </script>
 
 <footer class="site-footer">
