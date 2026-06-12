@@ -348,6 +348,16 @@ select option{background:#1A2540;color:var(--text)}
 .adv-body .card{box-shadow:none;border:1px solid var(--border);background:rgba(255,255,255,.02);margin-bottom:14px}
 .install-banner{background:var(--gradient);color:#fff;border-radius:14px;padding:13px 18px;margin-bottom:18px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;font-weight:600;font-size:.9em}
 .install-banner .btn{background:#fff;color:var(--primary);flex-shrink:0}
+/* contextual affiliate */
+.affiliate-card{border-color:rgba(255,107,53,.22)}
+.aff-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-bottom:10px}
+.aff-item{display:flex;gap:12px;align-items:flex-start;background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:14px;padding:14px;text-decoration:none;color:inherit;transition:transform .2s,border-color .2s,box-shadow .2s}
+.aff-item:hover{transform:translateY(-3px);border-color:rgba(255,107,53,.4);box-shadow:0 10px 30px rgba(0,0,0,.4)}
+.aff-ic{font-size:1.8em;flex-shrink:0;line-height:1.1}
+.aff-name{font-weight:800;color:var(--text);font-size:.95em}
+.aff-reason{font-size:.8em;color:var(--text2);line-height:1.45;margin-top:3px}
+.aff-btn{margin-top:8px;display:inline-block;color:var(--primary);font-weight:700;font-size:.82em}
+.aff-disclaimer{font-size:.75em;color:var(--text2);text-align:center;line-height:1.6;margin-top:6px}
 
 /* ─── DONATE ─── */
 .donate-fab{position:fixed;bottom:28px;right:28px;z-index:300;background:linear-gradient(135deg,#FF6B35,#F59E0B);color:#fff;border:none;border-radius:50px;padding:12px 20px;font-size:.88em;font-weight:700;cursor:pointer;box-shadow:0 4px 20px rgba(255,107,53,.5);display:flex;align-items:center;gap:8px;font-family:inherit;transition:all .2s;white-space:nowrap}
@@ -612,6 +622,16 @@ select option{background:#1A2540;color:var(--text)}
       <div id="gcal-alert" class="alert alert-info" style="margin-top:14px">
         <strong>วิธีนำเข้า Google Calendar:</strong> ดาวน์โหลดไฟล์ .ics → Google Calendar → Settings → Import & Export → Import
       </div>
+    </div>
+
+    <!-- Contextual affiliate recommendations -->
+    <div class="card affiliate-card" id="affiliate-card" style="display:none">
+      <div class="card-header">
+        <div class="card-icon">🛒</div>
+        <div><h2 id="aff-title">ของที่ช่วยให้แผนคุณไปได้สวย</h2><p id="aff-sub"></p></div>
+      </div>
+      <div class="aff-grid" id="aff-grid"></div>
+      <p class="aff-disclaimer" id="aff-disclaimer"></p>
     </div>
   </div>
 </div>
@@ -1372,6 +1392,7 @@ function renderSchedule(scroll=true) {
   });
   document.getElementById('schedule-container').innerHTML = html;
   renderToday();
+  renderAffiliate();
   if (scroll) document.getElementById('result-section').scrollIntoView({behavior:'smooth',block:'start'});
 }
 
@@ -1608,6 +1629,50 @@ function shareCard() {
     }
   }, 'image/png');
 }
+
+/* ── CONTEXTUAL AFFILIATE (revenue) ── */
+const AFFILIATE = [
+  { id:'whey',        icon:'💪', link:'https://s.shopee.co.th/9fIBgLhRwH', name:{th:'เวย์โปรตีน', en:'Whey Protein'} },
+  { id:'gel',         icon:'⚡', link:'https://s.shopee.co.th/7VDh6PpRsC', name:{th:'เจลให้พลังงาน', en:'Energy Gel'} },
+  { id:'electrolyte', icon:'💧', link:'https://s.shopee.co.th/3qKOjhpGM0', name:{th:'เครื่องดื่มเกลือแร่', en:'Electrolyte Drink'} },
+  { id:'salt',        icon:'🧂', link:'https://s.shopee.co.th/8Kmo60FrWa', name:{th:'เกลือแร่เม็ด', en:'Salt Tablets'} },
+];
+function renderAffiliate() {
+  const card = document.getElementById('affiliate-card');
+  if (!card) return;
+  if (!scheduleData) { card.style.display = 'none'; return; }
+  card.style.display = '';
+  const sd = scheduleData, isTh = currentLang === 'th';
+  const dist = sd.dist, longRace = dist >= 21.1;
+  const dl = dist<=5?'5 KM':dist<=10?'10 KM':dist<=21.1?'Half Marathon':'Full Marathon';
+  document.getElementById('aff-title').textContent = isTh ? `ของที่ช่วยให้แผน ${dl} ของคุณไปได้สวย` : `Gear to power your ${dl} plan`;
+  document.getElementById('aff-sub').textContent = isTh
+    ? `แนะนำตามแผนของคุณ · ${sd.totalWeeks} สัปดาห์ · ${Math.round(sd.totalKm)} กม.`
+    : `Picked for your plan · ${sd.totalWeeks} weeks · ${Math.round(sd.totalKm)} km`;
+  const reasons = {
+    whey: isTh ? `ฟื้นฟูกล้ามเนื้อหลังซ้อม — สำคัญในแผนที่ซ้อม ${sd.selectedDays.length} วัน/สัปดาห์` : `Muscle recovery — key with ${sd.selectedDays.length} sessions/week`,
+    gel: longRace ? (isTh?`เติมพลังงานระหว่าง Long Run และวันแข่ง ${dist} กม.`:`Fuel for long runs and your ${dist}km race`) : (isTh?`เติมพลังงานสำหรับวันซ้อมยาว`:`Energy for your longer training days`),
+    electrolyte: isTh ? `ชดเชยเกลือแร่ที่เสียไป โดยเฉพาะอากาศร้อนบ้านเรา` : `Replace electrolytes lost to sweat — vital in the heat`,
+    salt: longRace ? (isTh?`กันตะคริวในระยะไกล ${dist} กม.`:`Prevent cramps over ${dist}km`) : (isTh?`ช่วยกันตะคริวเวลาซ้อมหนัก`:`Helps prevent cramps on hard sessions`),
+  };
+  const order = longRace ? ['gel','electrolyte','salt','whey'] : ['whey','electrolyte','gel','salt'];
+  const btn = isTh ? 'ดูบน Shopee →' : 'View on Shopee →';
+  document.getElementById('aff-grid').innerHTML = order.map(id => {
+    const p = AFFILIATE.find(x => x.id === id);
+    return `<a class="aff-item" href="${p.link}" target="_blank" rel="noopener sponsored" onclick="trackAff('${p.id}')">
+      <div class="aff-ic">${p.icon}</div>
+      <div class="aff-body">
+        <div class="aff-name">${p.name[isTh?'th':'en']}</div>
+        <div class="aff-reason">${reasons[p.id]}</div>
+        <div class="aff-btn">${btn}</div>
+      </div>
+    </a>`;
+  }).join('');
+  document.getElementById('aff-disclaimer').textContent = isTh
+    ? '* ลิงก์ Affiliate — ซื้อผ่านลิงก์นี้ช่วย support ผู้สร้างแอปโดยไม่มีค่าใช้จ่ายเพิ่มเติม 🧡'
+    : '* Affiliate links — buying through them supports the app at no extra cost to you 🧡';
+}
+function trackAff(id) { try { if (window.gtag) gtag('event','affiliate_click',{ item_id:id, plan_dist: scheduleData && scheduleData.dist }); } catch(e) {} }
 
 /* ── PACE CALCULATOR ── */
 function calcPace() {
