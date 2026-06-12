@@ -280,6 +280,34 @@ select option{background:#1A2540;color:var(--text)}
 .tc-bar-pct{position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:.78em;font-weight:800;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.4)}
 .tc-prog-meta{font-size:.8em;color:var(--text2);margin-top:7px}
 .btn-ghost{background:rgba(255,255,255,.08);color:var(--text)}
+.day-row.missed{background:rgba(220,53,69,.06)}
+.day-row.missed .day-check{background:#DC3545;border-color:#DC3545}
+.day-note{font-size:.82em;color:#FBBF24;margin-top:4px;line-height:1.4}
+.tc-run.missed{background:rgba(220,53,69,.08);border-color:rgba(220,53,69,.3)}
+.tc-miss-badge{margin-top:8px;color:#FCA5A5;font-weight:700;font-size:.85em}
+.tc-note{font-size:.82em;color:#FBBF24;margin-top:8px;line-height:1.4}
+.tc-run-actions{display:flex;gap:6px;align-items:center;flex-shrink:0}
+.tc-st{width:40px;height:40px;border-radius:11px;border:2px solid var(--border);background:rgba(255,255,255,.04);color:var(--text2);font-size:1.05em;font-weight:800;cursor:pointer;font-family:inherit;transition:all .15s;display:flex;align-items:center;justify-content:center}
+.tc-st:hover{border-color:rgba(255,255,255,.25)}
+.tc-st.ok.active{background:rgba(16,185,129,.18);border-color:var(--success);color:#6EE7B7}
+.tc-st.miss.active{background:rgba(220,53,69,.18);border-color:#DC3545;color:#FCA5A5}
+/* log modal */
+.log-modal{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:400;display:none;align-items:center;justify-content:center;padding:20px}
+.log-modal.open{display:flex}
+.log-box{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:24px;max-width:430px;width:100%;position:relative;box-shadow:var(--card-shadow)}
+.log-close{position:absolute;top:13px;right:13px;background:rgba(255,255,255,.08);border:none;color:var(--text);width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:.95em;font-family:inherit}
+.log-close:hover{background:rgba(255,255,255,.16)}
+.log-day{font-size:1.15em;font-weight:800;color:#fff;margin-bottom:4px;padding-right:34px}
+.log-detail{font-size:.85em;color:var(--text2);margin-bottom:18px}
+.log-status-btns{display:flex;gap:10px;margin-bottom:18px}
+.log-st-btn{flex:1;display:flex;align-items:center;justify-content:center;gap:7px;padding:13px;border-radius:12px;border:2px solid var(--border);background:rgba(255,255,255,.03);color:var(--text2);font-weight:700;font-size:.93em;cursor:pointer;font-family:inherit;transition:all .15s}
+.log-st-btn span:first-child{font-size:1.15em}
+.log-st-btn.ok.active{background:rgba(16,185,129,.15);border-color:var(--success);color:#6EE7B7}
+.log-st-btn.miss.active{background:rgba(220,53,69,.15);border-color:#DC3545;color:#FCA5A5}
+.log-note-lbl{display:block;font-size:.8em;font-weight:700;color:var(--text2);margin-bottom:7px}
+.log-note{width:100%;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:12px;padding:11px;color:var(--text);font-family:inherit;font-size:.9em;resize:vertical;margin-bottom:16px;line-height:1.5}
+.log-note:focus{outline:none;border-color:var(--primary)}
+.log-actions{display:flex;gap:10px;justify-content:flex-end}
 
 /* ─── DONATE ─── */
 .donate-fab{position:fixed;bottom:28px;right:28px;z-index:300;background:linear-gradient(135deg,#FF6B35,#F59E0B);color:#fff;border:none;border-radius:50px;padding:12px 20px;font-size:.88em;font-weight:700;cursor:pointer;box-shadow:0 4px 20px rgba(255,107,53,.5);display:flex;align-items:center;gap:8px;font-family:inherit;transition:all .2s;white-space:nowrap}
@@ -857,8 +885,14 @@ const I18N = {
     streak_label:(n)=>`ซ้อมต่อเนื่อง ${n} ครั้ง`,
     share_btn:'📲 แชร์ความคืบหน้า', share_no_plan:'สร้างแผนก่อนถึงจะแชร์ได้นะ',
     share_saved:'บันทึกรูปแล้ว เอาไปแชร์ได้เลย 📲',
-    done_toast:'เยี่ยม! บันทึกว่าซ้อมเสร็จแล้ว 🎉',
-    row_toggle_hint:'คลิกเพื่อทำเครื่องหมายว่าซ้อมเสร็จ',
+    done_toast:'เยี่ยม! บันทึกว่าซ้อมสำเร็จแล้ว 🎉',
+    missed_toast:'บันทึกว่าวันนี้ไม่สำเร็จไว้แล้ว',
+    today_missed:'วันนี้ยังไม่สำเร็จ',
+    row_toggle_hint:'แตะเพื่อบันทึกผลการซ้อม + ใส่โน้ต',
+    log_status_done:'สำเร็จ', log_status_missed:'ไม่สำเร็จ',
+    log_note_label:'โน้ตเตือนความจำ',
+    log_note_ph:'เช่น รู้สึกเหนื่อย, เจ็บเข่า, อากาศร้อน, ฟอร์มดีมาก...',
+    log_save:'บันทึก', log_clear:'ล้างข้อมูล', log_saved:'บันทึกแล้ว ✅',
   },
   en: {
     nav_plan:'📋 Create Plan', nav_summary:'📊 Summary', nav_guide:'📖 Pace Guide', nav_pace:'⚡ Pace Calculator',
@@ -960,8 +994,14 @@ const I18N = {
     streak_label:(n)=>`${n}-session streak`,
     share_btn:'📲 Share progress', share_no_plan:'Create a plan first to share',
     share_saved:'Image saved — ready to share 📲',
-    done_toast:'Nice! Workout marked complete 🎉',
-    row_toggle_hint:'Click to mark this run as done',
+    done_toast:'Nice! Run marked complete 🎉',
+    missed_toast:'Saved as missed for today',
+    today_missed:'Marked as missed',
+    row_toggle_hint:'Tap to log your result and add a note',
+    log_status_done:'Completed', log_status_missed:'Missed',
+    log_note_label:'Reminder note',
+    log_note_ph:'e.g. felt tired, knee pain, hot weather, great form...',
+    log_save:'Save', log_clear:'Clear', log_saved:'Saved ✅',
   }
 };
 let currentLang = localStorage.getItem('lang') || 'th';
@@ -1245,11 +1285,14 @@ function renderSchedule(scroll=true) {
       const km = day.km>0 ? `${day.km} km` : '';
       const pa = day.pace!=='-' ? `@ ${day.pace}/km` : '';
       const key = dateKey(day.date);
-      const done = !isRest && !!runProgress[key];
-      html += `<div class="day-row${isRest?' rest':' run'}${done?' done':''}" id="row-${key}"${isRest?'':` onclick="toggleDone('${key}')" title="${t('row_toggle_hint')}"`}>
-        <div class="day-name">${isRest?'':`<span class="day-check">${done?'✓':''}</span>`}${t('day_full')[day.dow]}<br><small style="font-weight:400;color:var(--text2)">${day.date.toLocaleDateString(locale,{day:'numeric',month:'short'})}</small></div>
+      const st = isRest ? null : logStatus(key);
+      const note = isRest ? '' : logNote(key);
+      const stCls = st === 'done' ? ' done' : st === 'missed' ? ' missed' : '';
+      const mark = st === 'done' ? '✓' : st === 'missed' ? '✗' : '';
+      html += `<div class="day-row${isRest?' rest':' run'}${stCls}" id="row-${key}"${isRest?'':` onclick="openLog('${key}')" title="${t('row_toggle_hint')}"`}>
+        <div class="day-name">${isRest?'':`<span class="day-check">${mark}</span>`}${t('day_full')[day.dow]}<br><small style="font-weight:400;color:var(--text2)">${day.date.toLocaleDateString(locale,{day:'numeric',month:'short'})}</small></div>
         <div><span class="run-type type-${day.type}">${day.label}</span></div>
-        <div class="run-desc">${day.desc}</div>
+        <div class="run-desc">${day.desc}${note?`<div class="day-note">📝 ${htmlEsc(note)}</div>`:''}</div>
         <div class="run-distance">${km}<br><small>${pa}</small></div>
       </div>`;
     });
@@ -1261,9 +1304,15 @@ function renderSchedule(scroll=true) {
 }
 
 /* ── PROGRESS TRACKING (Feature 1) ── */
+// runProgress[key] = { status:'done'|'missed'|null, note:'' }
 let runProgress = {};
 try { runProgress = JSON.parse(localStorage.getItem('runProgress') || '{}') || {}; } catch(e) { runProgress = {}; }
+// migrate legacy boolean entries → object form
+Object.keys(runProgress).forEach(k => { if (runProgress[k] === true) runProgress[k] = { status:'done', note:'' }; });
 function saveProgress() { localStorage.setItem('runProgress', JSON.stringify(runProgress)); }
+function logStatus(key) { const v = runProgress[key]; return v ? (v.status || null) : null; }
+function logNote(key) { const v = runProgress[key]; return v && v.note ? v.note : ''; }
+function htmlEsc(s) { return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 function dateKey(d) { const x = new Date(d); return `${x.getFullYear()}-${p2(x.getMonth()+1)}-${p2(x.getDate())}`; }
 function runDaysList() {
   const list = [];
@@ -1275,28 +1324,82 @@ function runDaysList() {
 function computeProgress() {
   const list = runDaysList();
   const total = list.length;
-  let done = 0;
-  list.forEach(d => { if (runProgress[dateKey(d.date)]) done++; });
+  let done = 0, missed = 0;
+  list.forEach(d => { const s = logStatus(dateKey(d.date)); if (s === 'done') done++; else if (s === 'missed') missed++; });
   const today = new Date(); today.setHours(0,0,0,0);
   const due = list.filter(d => { const x = new Date(d.date); x.setHours(0,0,0,0); return x <= today; });
   let streak = 0;
   for (let i = due.length-1; i >= 0; i--) {
     const x = new Date(due[i].date); x.setHours(0,0,0,0);
-    if (runProgress[dateKey(due[i].date)]) streak++;
-    else if (x.getTime() === today.getTime()) continue; // today not done yet → don't break streak
-    else break;
+    const s = logStatus(dateKey(due[i].date));
+    if (s === 'done') streak++;
+    else if (s === 'missed') break;                       // explicit miss always breaks streak
+    else if (x.getTime() === today.getTime()) continue;   // today not logged yet → don't break
+    else break;                                           // unlogged past run → breaks
   }
-  return { total, done, pct: total ? Math.round(done/total*100) : 0, streak };
+  return { total, done, missed, pct: total ? Math.round(done/total*100) : 0, streak };
 }
-function toggleDone(key) {
-  if (runProgress[key]) delete runProgress[key]; else runProgress[key] = true;
+// Quick status set (toggles off if same status clicked again); preserves any existing note
+function setStatus(key, status) {
+  const cur = runProgress[key];
+  const note = cur ? (cur.note || '') : '';
+  if (cur && cur.status === status) {
+    if (note) runProgress[key] = { status:null, note }; else delete runProgress[key];
+  } else {
+    runProgress[key] = { status, note };
+  }
   saveProgress();
-  const on = !!runProgress[key];
-  const row = document.getElementById('row-'+key);
-  if (row) { row.classList.toggle('done', on); const chk = row.querySelector('.day-check'); if (chk) chk.textContent = on ? '✓' : ''; }
-  renderToday();
-  if (on) showToast(t('done_toast'));
+  renderSchedule(false);
+  if (logStatus(key) === 'done') showToast(t('done_toast'));
+  else if (logStatus(key) === 'missed') showToast(t('missed_toast'));
 }
+
+/* ── LOG MODAL (status + note per day) ── */
+let logKey = null, logPick = null;
+function openLog(key) {
+  if (!scheduleData) return;
+  logKey = key;
+  let day = null;
+  scheduleData.weeks.forEach(w => w.days.forEach(d => { if (dateKey(d.date) === key) day = d; }));
+  if (!day) return;
+  const locale = currentLang === 'en' ? 'en-GB' : 'th-TH';
+  document.getElementById('log-day').textContent = `${t('day_full')[day.dow]} · ${new Date(day.date).toLocaleDateString(locale,{day:'numeric',month:'long'})}`;
+  document.getElementById('log-detail').textContent = day.type === 'rest' ? t('type_rest_label') : `${day.label} · ${day.km} km @ ${day.pace}/km`;
+  logPick = logStatus(key);
+  document.getElementById('log-note').value = logNote(key);
+  document.getElementById('log-ok-lbl').textContent   = t('log_status_done');
+  document.getElementById('log-miss-lbl').textContent = t('log_status_missed');
+  document.getElementById('log-note-lbl').textContent = t('log_note_label');
+  document.getElementById('log-note').placeholder     = t('log_note_ph');
+  document.getElementById('log-clear').textContent    = t('log_clear');
+  document.getElementById('log-save').textContent     = t('log_save');
+  syncLogBtns();
+  document.getElementById('log-modal').classList.add('open');
+  setTimeout(() => document.getElementById('log-note').focus(), 50);
+}
+function syncLogBtns() {
+  document.getElementById('log-ok').classList.toggle('active', logPick === 'done');
+  document.getElementById('log-miss').classList.toggle('active', logPick === 'missed');
+}
+function pickStatus(s) { logPick = (logPick === s) ? null : s; syncLogBtns(); }
+function saveLog() {
+  if (!logKey) return;
+  const note = document.getElementById('log-note').value.trim();
+  if (!logPick && !note) delete runProgress[logKey];
+  else runProgress[logKey] = { status: logPick || null, note };
+  saveProgress();
+  closeLog();
+  renderSchedule(false);
+  showToast(t('log_saved'));
+}
+function clearLog() {
+  if (!logKey) return;
+  delete runProgress[logKey];
+  saveProgress();
+  closeLog();
+  renderSchedule(false);
+}
+function closeLog() { document.getElementById('log-modal').classList.remove('open'); logKey = null; logPick = null; }
 
 /* ── TODAY DASHBOARD (Feature 2) ── */
 function renderToday() {
@@ -1332,15 +1435,21 @@ function renderToday() {
     : '';
   let wo = '';
   if (todayDay && todayDay.type !== 'rest') {
-    const key = dateKey(todayDay.date), done = !!runProgress[key];
-    wo = `<div class="tc-run${done?' done':''}">
+    const key = dateKey(todayDay.date), st = logStatus(key), note = logNote(key);
+    const stCls = st === 'done' ? ' done' : st === 'missed' ? ' missed' : '';
+    wo = `<div class="tc-run${stCls}">
         <div class="tc-run-info">
           <div><span class="run-type type-${todayDay.type}">${todayDay.label}</span></div>
           <div class="tc-run-detail">${todayDay.km} km · @ ${todayDay.pace}/km</div>
           <div class="tc-run-desc">${todayDay.desc}</div>
-          ${done ? `<div class="tc-done-badge">${t('today_done')}</div>` : ''}
+          ${st === 'done' ? `<div class="tc-done-badge">${t('today_done')}</div>` : st === 'missed' ? `<div class="tc-miss-badge">${t('today_missed')}</div>` : ''}
+          ${note ? `<div class="tc-note">📝 ${htmlEsc(note)}</div>` : ''}
         </div>
-        <button class="btn btn-sm ${done?'btn-ghost':'btn-success'}" onclick="toggleDone('${key}')">${done ? t('today_unmark') : t('today_mark')}</button>
+        <div class="tc-run-actions">
+          <button class="tc-st ok${st==='done'?' active':''}" title="${t('log_status_done')}" onclick="setStatus('${key}','done')">✓</button>
+          <button class="tc-st miss${st==='missed'?' active':''}" title="${t('log_status_missed')}" onclick="setStatus('${key}','missed')">✗</button>
+          <button class="tc-st note" title="${t('log_note_label')}" onclick="openLog('${key}')">📝</button>
+        </div>
       </div>`;
   } else if (todayDay) {
     wo = `<div class="tc-rest">${t('today_rest')}${nextRunHtml}</div>`;
@@ -2069,6 +2178,25 @@ window.onload = function() {
     <p style="font-size:.75em;color:rgba(255,255,255,.3);text-align:center;line-height:1.6" id="shop-disclaimer">
       * ลิงก์ด้านบนเป็น Affiliate Link — เมื่อซื้อสินค้าผ่านลิงก์นี้จะช่วย support ผู้สร้างแอปโดยไม่มีค่าใช้จ่ายเพิ่มเติมสำหรับคุณ 🧡
     </p>
+  </div>
+</div>
+
+<!-- Log Modal (mark run result + note) -->
+<div class="log-modal" id="log-modal" onclick="if(event.target===this)closeLog()">
+  <div class="log-box">
+    <button class="log-close" onclick="closeLog()">✕</button>
+    <div class="log-day" id="log-day"></div>
+    <div class="log-detail" id="log-detail"></div>
+    <div class="log-status-btns">
+      <button class="log-st-btn ok" id="log-ok" onclick="pickStatus('done')"><span>✓</span> <span id="log-ok-lbl">สำเร็จ</span></button>
+      <button class="log-st-btn miss" id="log-miss" onclick="pickStatus('missed')"><span>✗</span> <span id="log-miss-lbl">ไม่สำเร็จ</span></button>
+    </div>
+    <label class="log-note-lbl" id="log-note-lbl" for="log-note">โน้ตเตือนความจำ</label>
+    <textarea class="log-note" id="log-note" rows="3" maxlength="200"></textarea>
+    <div class="log-actions">
+      <button class="btn btn-sm btn-ghost" id="log-clear" onclick="clearLog()">ล้างข้อมูล</button>
+      <button class="btn btn-sm btn-primary" id="log-save" onclick="saveLog()">บันทึก</button>
+    </div>
   </div>
 </div>
 
