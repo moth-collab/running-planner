@@ -257,6 +257,7 @@ select option{background:#1A2540;color:var(--text)}
 .lang-toggle:hover{background:rgba(255,107,53,.12);border-color:rgba(255,107,53,.3);color:var(--primary)}
 .lang-toggle .lt-label{font-size:.9em;opacity:.75}
 .lang-toggle .lt-lang{background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;font-weight:800;font-size:1em}
+.hero-lang{position:absolute;top:14px;right:14px;z-index:3;margin:0;background:rgba(10,15,30,.55);backdrop-filter:blur(4px)}
 
 /* ─── FOOTER ─── */
 .site-footer{background:#060C18;border-top:1px solid rgba(255,255,255,.07);padding:20px;text-align:center}
@@ -379,6 +380,17 @@ select option{background:#1A2540;color:var(--text)}
 .hrz-item{display:flex;justify-content:space-between;align-items:center;gap:8px;background:rgba(255,255,255,.03);border:1px solid var(--border);border-left:3px solid var(--border);border-radius:8px;padding:8px 12px;font-size:.82em}
 .hrz-name{font-weight:800;white-space:nowrap}
 .hrz-bpm{color:var(--text);font-weight:700;white-space:nowrap}
+/* trust + reviews */
+.trust-strip{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-bottom:18px}
+.trust-badge{background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:20px;padding:6px 14px;font-size:.8em;font-weight:600;color:var(--text2)}
+.reviews-empty{text-align:center;color:var(--text2);font-size:.9em;padding:22px 12px;line-height:1.6}
+.reviews-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.review-card{background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:14px;padding:16px}
+.review-head{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.review-ava{width:36px;height:36px;border-radius:50%;background:var(--gradient);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.85em;flex-shrink:0}
+.review-name{font-weight:800;color:var(--text);font-size:.9em}
+.review-text{font-size:.85em;color:var(--text);line-height:1.55}
+.review-result{margin-top:8px;font-size:.8em;color:#6EE7B7;font-weight:700}
 
 /* ─── DONATE ─── */
 .donate-fab{position:fixed;bottom:28px;right:28px;z-index:300;background:linear-gradient(135deg,#FF6B35,#F59E0B);color:#fff;border:none;border-radius:50px;padding:12px 20px;font-size:.88em;font-weight:700;cursor:pointer;box-shadow:0 4px 20px rgba(255,107,53,.5);display:flex;align-items:center;gap:8px;font-family:inherit;transition:all .2s;white-space:nowrap}
@@ -400,6 +412,7 @@ select option{background:#1A2540;color:var(--text)}
 <header>
   <div class="hero-bg"></div>
   <div class="hero-overlay"></div>
+  <button class="lang-toggle hero-lang" onclick="toggleLang()" id="lang-btn">🌐 <span class="lt-lang" id="lang-code">EN</span></button>
   <div class="hero-content">
     <div class="hero-badge">🏃 Running Schedule Planner</div>
     <h1>วางแผนการวิ่ง<br><span class="hero-accent">อย่างมืออาชีพ</span></h1>
@@ -422,11 +435,6 @@ select option{background:#1A2540;color:var(--text)}
     <button class="nav-tab" onclick="switchPage('guide')">📖 Pace Guide</button>
     <button class="nav-tab" onclick="switchPage('pace')">⚡ Pace Calculator</button>
     <button class="nav-tab" onclick="switchPage('events')">📍 ค้นหางานวิ่ง</button>
-    <div style="flex:1"></div>
-    <button class="lang-toggle" onclick="toggleLang()" id="lang-btn">
-      <span class="lt-label" id="lang-label">เปลี่ยนภาษา</span>
-      <span class="lt-lang" id="lang-code">EN</span>
-    </button>
   </div>
 </div>
 
@@ -454,6 +462,14 @@ select option{background:#1A2540;color:var(--text)}
   </div>
 
   <!-- TODAY DASHBOARD -->
+  <!-- Trust badges (factual) -->
+  <div class="trust-strip">
+    <span class="trust-badge" data-i18n="trust_free">🆓 ฟรี 100%</span>
+    <span class="trust-badge" data-i18n="trust_nosignup">⚡ ไม่ต้องสมัคร</span>
+    <span class="trust-badge" data-i18n="trust_instant">📲 ใช้ได้ทันที</span>
+    <span class="trust-badge" data-i18n="trust_science">❤️ อิงหลักวิทยาศาสตร์การกีฬา</span>
+  </div>
+
   <!-- Preset plans (quick start) -->
   <div class="card" id="preset-card-wrap">
     <h3 id="preset-title" style="font-size:1.05em;font-weight:800;color:#fff;margin-bottom:4px">🔥 เริ่มเร็วด้วยแผนสำเร็จรูป</h3>
@@ -616,6 +632,15 @@ select option{background:#1A2540;color:var(--text)}
 
     </div>
   </details>
+
+  <!-- Reviews (real only — populated from REVIEWS array) -->
+  <div class="card" id="reviews-card">
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:14px">
+      <h3 id="reviews-title" style="font-size:1.05em;font-weight:800;color:#fff">💬 รีวิวจากนักวิ่ง</h3>
+      <button class="btn btn-sm btn-primary" id="review-write-btn" onclick="writeReview()">✍️ เขียนรีวิว</button>
+    </div>
+    <div id="reviews-grid"></div>
+  </div>
 </div>
 
 <!-- PAGE: HOME (วันนี้ + ตาราง) -->
@@ -1046,6 +1071,7 @@ const I18N = {
     hr_age:'อายุ (ปี)', hr_rest:'Resting HR (ตอนพัก)', hr_max:'Max HR (ถ้าวัดมาแล้ว)',
     hr_zones_title:'❤️ โซนหัวใจของคุณ (Karvonen)',
     hrz_z1:'Recovery', hrz_z2:'Easy', hrz_z3:'Tempo', hrz_z4:'Threshold', hrz_z5:'VO₂max',
+    trust_free:'🆓 ฟรี 100%', trust_nosignup:'⚡ ไม่ต้องสมัคร', trust_instant:'📲 ใช้ได้ทันที', trust_science:'❤️ อิงหลักวิทยาศาสตร์การกีฬา',
     evt_note:'* เว็บด้านบนเป็นบริการภายนอกที่ดูแลโดยผู้ให้บริการแต่ละราย — ข้อมูลงาน วันที่ และสถานะรับสมัครจะอัปเดตที่ต้นทาง',
   },
   en: {
@@ -1170,6 +1196,7 @@ const I18N = {
     hr_age:'Age (years)', hr_rest:'Resting HR', hr_max:'Max HR (if measured)',
     hr_zones_title:'❤️ Your heart-rate zones (Karvonen)',
     hrz_z1:'Recovery', hrz_z2:'Easy', hrz_z3:'Tempo', hrz_z4:'Threshold', hrz_z5:'VO₂max',
+    trust_free:'🆓 100% free', trust_nosignup:'⚡ No sign-up', trust_instant:'📲 Use instantly', trust_science:'❤️ Sports-science based',
     evt_note:'* These are external services maintained by their providers — event details, dates and registration status update at the source.',
   }
 };
@@ -1229,6 +1256,7 @@ function applyLang() {
   const gcalAlert = document.getElementById('gcal-alert');
   if (gcalAlert) gcalAlert.innerHTML = t('alert_gcal');
   renderPresets();
+  renderReviews();
   if (scheduleData) {
     renderSchedule(false);
     renderToday();
@@ -1436,6 +1464,32 @@ function applyPreset(id) {
   ['goal_h','goal_m','goal_s'].forEach(i => { const e = document.getElementById(i); if (e) e.value = ''; });
   try { if (window.gtag) gtag('event','preset_selected',{ preset:id }); } catch(e) {}
   generateSchedule();
+}
+
+/* ── REVIEWS (real only) ── */
+// Add REAL reviews here as they come in, e.g.:
+// { initials:'PJ', name:'ปนัดดา', text:'...', result:'...' }
+const REVIEWS = [];
+const REVIEW_FORM_URL = 'https://instagram.com/mothhhhh'; // ช่องทางรับรีวิวจริง (เปลี่ยนเป็น Google Form ได้)
+function renderReviews() {
+  const grid = document.getElementById('reviews-grid'); if (!grid) return;
+  const isTh = currentLang === 'th';
+  const title = document.getElementById('reviews-title'); if (title) title.textContent = isTh ? '💬 รีวิวจากนักวิ่ง' : '💬 Runner reviews';
+  const wb = document.getElementById('review-write-btn'); if (wb) wb.textContent = isTh ? '✍️ เขียนรีวิว' : '✍️ Write a review';
+  if (!REVIEWS.length) {
+    grid.innerHTML = `<div class="reviews-empty">${isTh ? 'ยังไม่มีรีวิว — เป็นคนแรกที่แบ่งปันประสบการณ์! 🧡' : 'No reviews yet — be the first to share your story! 🧡'}</div>`;
+    return;
+  }
+  grid.innerHTML = `<div class="reviews-grid">` + REVIEWS.map(r => `
+    <div class="review-card">
+      <div class="review-head"><span class="review-ava">${htmlEsc(r.initials||'🏃')}</span><span class="review-name">${htmlEsc(r.name||'')}</span></div>
+      <div class="review-text">"${htmlEsc(r.text||'')}"</div>
+      ${r.result ? `<div class="review-result">✅ ${htmlEsc(r.result)}</div>` : ''}
+    </div>`).join('') + `</div>`;
+}
+function writeReview() {
+  try { if (window.gtag) gtag('event','review_cta_click'); } catch(e) {}
+  window.open(REVIEW_FORM_URL, '_blank', 'noopener');
 }
 
 /* ── HEART RATE ZONES (Karvonen / HRR) ── */
