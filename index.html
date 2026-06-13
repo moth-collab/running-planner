@@ -343,6 +343,8 @@ select option{background:#1A2540;color:var(--text)}
 .log-note{width:100%;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:12px;padding:11px;color:var(--text);font-family:inherit;font-size:.9em;resize:vertical;margin-bottom:16px;line-height:1.5}
 .log-note:focus{outline:none;border-color:var(--primary)}
 .log-actions{display:flex;gap:10px;justify-content:flex-end}
+.rv-input{width:100%;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:12px;padding:11px;color:var(--text);font-family:inherit;font-size:.9em;margin-bottom:14px}
+.rv-input:focus{outline:none;border-color:var(--primary)}
 /* advanced (collapsible) + install banner */
 .adv{margin-bottom:20px;border:1px solid var(--border);border-radius:16px;background:var(--card);overflow:hidden}
 .adv-summary{cursor:pointer;padding:16px 20px;font-weight:700;color:var(--text2);font-size:.9em;list-style:none;user-select:none}
@@ -1072,6 +1074,9 @@ const I18N = {
     hr_zones_title:'❤️ โซนหัวใจของคุณ (Karvonen)',
     hrz_z1:'Recovery', hrz_z2:'Easy', hrz_z3:'Tempo', hrz_z4:'Threshold', hrz_z5:'VO₂max',
     trust_free:'🆓 ฟรี 100%', trust_nosignup:'⚡ ไม่ต้องสมัคร', trust_instant:'📲 ใช้ได้ทันที', trust_science:'❤️ อิงหลักวิทยาศาสตร์การกีฬา',
+    rv_title:'เขียนรีวิว', rv_sub:'เล่าประสบการณ์ของคุณ ช่วยนักวิ่งคนอื่นตัดสินใจ 🧡',
+    rv_l_name:'ชื่อ / ชื่อเล่น', rv_l_text:'รีวิวของคุณ', rv_l_result:'ผลลัพธ์ที่ได้ (ไม่บังคับ)',
+    rv_result_ph:'เช่น วิ่ง 5K จบครั้งแรก, ลดน้ำหนัก 5 กก.', rv_cancel:'ยกเลิก', rv_submit:'ส่งรีวิว',
     evt_note:'* เว็บด้านบนเป็นบริการภายนอกที่ดูแลโดยผู้ให้บริการแต่ละราย — ข้อมูลงาน วันที่ และสถานะรับสมัครจะอัปเดตที่ต้นทาง',
   },
   en: {
@@ -1197,6 +1202,9 @@ const I18N = {
     hr_zones_title:'❤️ Your heart-rate zones (Karvonen)',
     hrz_z1:'Recovery', hrz_z2:'Easy', hrz_z3:'Tempo', hrz_z4:'Threshold', hrz_z5:'VO₂max',
     trust_free:'🆓 100% free', trust_nosignup:'⚡ No sign-up', trust_instant:'📲 Use instantly', trust_science:'❤️ Sports-science based',
+    rv_title:'Write a review', rv_sub:'Share your experience to help other runners decide 🧡',
+    rv_l_name:'Name / nickname', rv_l_text:'Your review', rv_l_result:'Your result (optional)',
+    rv_result_ph:'e.g. finished my first 5K, lost 5 kg', rv_cancel:'Cancel', rv_submit:'Submit review',
     evt_note:'* These are external services maintained by their providers — event details, dates and registration status update at the source.',
   }
 };
@@ -1470,7 +1478,6 @@ function applyPreset(id) {
 // Add REAL reviews here as they come in, e.g.:
 // { initials:'PJ', name:'ปนัดดา', text:'...', result:'...' }
 const REVIEWS = [];
-const REVIEW_FORM_URL = 'https://instagram.com/mothhhhh'; // ช่องทางรับรีวิวจริง (เปลี่ยนเป็น Google Form ได้)
 function renderReviews() {
   const grid = document.getElementById('reviews-grid'); if (!grid) return;
   const isTh = currentLang === 'th';
@@ -1489,7 +1496,27 @@ function renderReviews() {
 }
 function writeReview() {
   try { if (window.gtag) gtag('event','review_cta_click'); } catch(e) {}
-  window.open(REVIEW_FORM_URL, '_blank', 'noopener');
+  const f = document.getElementById('review-form'); if (f) f.style.display = '';
+  const th = document.getElementById('rv-thanks'); if (th) th.style.display = 'none';
+  document.getElementById('review-modal').classList.add('open');
+  setTimeout(() => { const n = document.getElementById('rv-name'); if (n) n.focus(); }, 50);
+}
+function closeReview() { document.getElementById('review-modal').classList.remove('open'); }
+function submitReview(e) {
+  e.preventDefault();
+  const form = document.getElementById('review-form');
+  const body = new URLSearchParams(new FormData(form)).toString();
+  const btn = document.getElementById('rv-submit'); if (btn) btn.disabled = true;
+  fetch('/', { method:'POST', headers:{'Content-Type':'application/x-www-form-urlencoded'}, body })
+    .then(() => {
+      form.style.display = 'none';
+      const th = document.getElementById('rv-thanks');
+      th.style.display = ''; th.textContent = currentLang==='th' ? 'ขอบคุณสำหรับรีวิว! 🧡 ทีมงานจะนำไปแสดงเร็วๆ นี้' : 'Thanks for your review! 🧡 We will feature it soon';
+      form.reset();
+      try { if (window.gtag) gtag('event','review_submitted'); } catch(e) {}
+    })
+    .catch(() => showToast(currentLang==='th' ? 'ส่งไม่สำเร็จ ลองใหม่อีกครั้ง' : 'Submit failed, please try again'))
+    .finally(() => { if (btn) btn.disabled = false; });
 }
 
 /* ── HEART RATE ZONES (Karvonen / HRR) ── */
@@ -2498,6 +2525,30 @@ window.addEventListener('appinstalled', () => { const b = document.getElementByI
   </div>
 </div>
 
+
+<!-- Review Modal (submits to Netlify Forms) -->
+<div class="log-modal" id="review-modal" onclick="if(event.target===this)closeReview()">
+  <div class="log-box">
+    <button class="log-close" onclick="closeReview()">✕</button>
+    <div class="log-day" data-i18n="rv_title">เขียนรีวิว</div>
+    <div class="log-detail" data-i18n="rv_sub">เล่าประสบการณ์ของคุณ ช่วยนักวิ่งคนอื่นตัดสินใจ 🧡</div>
+    <form id="review-form" name="review" method="POST" data-netlify="true" netlify-honeypot="bot-field" onsubmit="submitReview(event)">
+      <input type="hidden" name="form-name" value="review">
+      <p hidden><label>อย่ากรอกช่องนี้: <input name="bot-field"></label></p>
+      <label class="log-note-lbl" data-i18n="rv_l_name">ชื่อ / ชื่อเล่น</label>
+      <input class="rv-input" type="text" name="name" id="rv-name" maxlength="40" required>
+      <label class="log-note-lbl" data-i18n="rv_l_text">รีวิวของคุณ</label>
+      <textarea class="log-note" name="review" id="rv-text" rows="3" maxlength="300" required></textarea>
+      <label class="log-note-lbl" data-i18n="rv_l_result">ผลลัพธ์ที่ได้ (ไม่บังคับ)</label>
+      <input class="rv-input" type="text" name="result" id="rv-result" maxlength="60" data-i18n="rv_result_ph">
+      <div class="log-actions">
+        <button type="button" class="btn btn-sm btn-ghost" onclick="closeReview()" data-i18n="rv_cancel">ยกเลิก</button>
+        <button type="submit" class="btn btn-sm btn-primary" id="rv-submit" data-i18n="rv_submit">ส่งรีวิว</button>
+      </div>
+    </form>
+    <div id="rv-thanks" style="display:none;text-align:center;padding:14px 0;color:#6EE7B7;font-weight:700;line-height:1.5"></div>
+  </div>
+</div>
 
 <!-- Log Modal (mark run result + note) -->
 <div class="log-modal" id="log-modal" onclick="if(event.target===this)closeLog()">
