@@ -246,8 +246,9 @@ select option{background:#1A2540;color:var(--text)}
 
 @media(max-width:600px){
   .pr-grid{grid-template-columns:1fr}
-  .day-row{grid-template-columns:85px 110px 1fr}
-  .run-distance{display:none}
+  .day-row{grid-template-columns:72px 1fr auto;gap:8px;padding:10px 12px}
+  .run-desc{display:none}
+  .run-distance{text-align:right}
   header{min-height:360px}
 }
 
@@ -372,6 +373,12 @@ select option{background:#1A2540;color:var(--text)}
 .preset-meta{font-size:.75em;font-weight:700;color:var(--primary)}
 .preset-hook{font-size:.8em;color:var(--text2);line-height:1.45;flex:1}
 .preset-cta{margin-top:6px;color:var(--primary);font-weight:700;font-size:.83em}
+/* heart-rate zones */
+.hr-chip{font-size:.72em;font-weight:700;margin-top:2px;letter-spacing:.2px}
+.hrz-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:8px}
+.hrz-item{display:flex;justify-content:space-between;align-items:center;gap:8px;background:rgba(255,255,255,.03);border:1px solid var(--border);border-left:3px solid var(--border);border-radius:8px;padding:8px 12px;font-size:.82em}
+.hrz-name{font-weight:800;white-space:nowrap}
+.hrz-bpm{color:var(--text);font-weight:700;white-space:nowrap}
 
 /* ─── DONATE ─── */
 .donate-fab{position:fixed;bottom:28px;right:28px;z-index:300;background:linear-gradient(135deg,#FF6B35,#F59E0B);color:#fff;border:none;border-radius:50px;padding:12px 20px;font-size:.88em;font-weight:700;cursor:pointer;box-shadow:0 4px 20px rgba(255,107,53,.5);display:flex;align-items:center;gap:8px;font-family:inherit;transition:all .2s;white-space:nowrap}
@@ -495,6 +502,28 @@ select option{background:#1A2540;color:var(--text)}
             <span>:</span><input type="number" id="goal_s" placeholder="SS" min="0" max="59">
           </div>
           <small data-i18n="goal_time_hint">เว้นว่างให้ระบบคำนวณจากสถิติของคุณอัตโนมัติ</small>
+        </div>
+      </div>
+
+      <!-- Heart rate (optional) -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon">❤️</div>
+          <div><h2 data-i18n="hr_card_title">ข้อมูลหัวใจ (ไม่บังคับ)</h2><p data-i18n="hr_hint">กรอกเพื่อดูช่วง BPM ในแต่ละวันซ้อม</p></div>
+        </div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label data-i18n="hr_age">อายุ (ปี)</label>
+            <input type="number" id="hr_age" placeholder="30" min="10" max="90">
+          </div>
+          <div class="form-group">
+            <label data-i18n="hr_rest">Resting HR (ตอนพัก)</label>
+            <input type="number" id="hr_rest" placeholder="60" min="30" max="120">
+          </div>
+          <div class="form-group">
+            <label data-i18n="hr_max">Max HR (ถ้าวัดมาแล้ว)</label>
+            <input type="number" id="hr_max" placeholder="190" min="120" max="230">
+          </div>
         </div>
       </div>
 
@@ -632,6 +661,7 @@ select option{background:#1A2540;color:var(--text)}
       <div class="stats-grid" id="stats-grid"></div>
       <h3 data-i18n="pace_guide_title" style="font-size:.93em;font-weight:700;color:var(--secondary);margin-bottom:10px">🏃 Pace Guide ของคุณ</h3>
       <div class="pace-guide" id="pace-guide"></div>
+      <div id="hr-zone-box" style="display:none"></div>
     </div>
 
     <div class="card">
@@ -1012,6 +1042,10 @@ const I18N = {
     evt_cat_find:'📅 ค้นหา & ปฏิทินงานวิ่ง', evt_cat_reg:'📝 ระบบรับสมัครงานวิ่ง',
     evt_visit:'เปิดเว็บ →',
     home_empty_title:'ยังไม่มีแผนการวิ่ง', home_empty_sub:'สร้างแผนก่อน แล้วหน้านี้จะแสดงตารางและความคืบหน้าของคุณ', home_empty_btn:'✨ ไปสร้างแผน',
+    hr_card_title:'ข้อมูลหัวใจ (ไม่บังคับ)', hr_hint:'กรอกเพื่อดูช่วง BPM ในแต่ละวันซ้อม',
+    hr_age:'อายุ (ปี)', hr_rest:'Resting HR (ตอนพัก)', hr_max:'Max HR (ถ้าวัดมาแล้ว)',
+    hr_zones_title:'❤️ โซนหัวใจของคุณ (Karvonen)',
+    hrz_z1:'Recovery', hrz_z2:'Easy', hrz_z3:'Tempo', hrz_z4:'Threshold', hrz_z5:'VO₂max',
     evt_note:'* เว็บด้านบนเป็นบริการภายนอกที่ดูแลโดยผู้ให้บริการแต่ละราย — ข้อมูลงาน วันที่ และสถานะรับสมัครจะอัปเดตที่ต้นทาง',
   },
   en: {
@@ -1132,6 +1166,10 @@ const I18N = {
     evt_cat_find:'📅 Find & race calendars', evt_cat_reg:'📝 Race registration',
     evt_visit:'Open site →',
     home_empty_title:'No training plan yet', home_empty_sub:'Create a plan and this page will show your schedule and progress', home_empty_btn:'✨ Create a plan',
+    hr_card_title:'Heart rate (optional)', hr_hint:'Add this to see BPM ranges on each training day',
+    hr_age:'Age (years)', hr_rest:'Resting HR', hr_max:'Max HR (if measured)',
+    hr_zones_title:'❤️ Your heart-rate zones (Karvonen)',
+    hrz_z1:'Recovery', hrz_z2:'Easy', hrz_z3:'Tempo', hrz_z4:'Threshold', hrz_z5:'VO₂max',
     evt_note:'* These are external services maintained by their providers — event details, dates and registration status update at the source.',
   }
 };
@@ -1342,7 +1380,10 @@ function generateSchedule() {
     cur.setDate(cur.getDate()+7);
   }
 
-  scheduleData = {dist,goalTime,racePace,zones,experience,runPeriod,runTime,selectedDays,sortedDays,totalWeeks,startDate,raceDate,weeks,pr:{pr5k,pr10k,prhalf,prfull},totalKm:Math.round(weeks.reduce((s,w)=>s+w.totalKm,0)*10)/10,createdAt:new Date().toISOString()};
+  const _hrRest=parseInt(document.getElementById('hr_rest').value)||0, _hrAge=parseInt(document.getElementById('hr_age').value)||0, _hrMaxIn=parseInt(document.getElementById('hr_max').value)||0;
+  let _hrData=null;
+  if (_hrRest>0 && (_hrMaxIn>0||_hrAge>0)) { const _mx=_hrMaxIn>0?_hrMaxIn:Math.round(208-0.7*_hrAge); if(_mx>_hrRest) _hrData={restHR:_hrRest,maxHR:_mx,age:_hrAge||null,zones:getHRZones(_mx,_hrRest)}; }
+  scheduleData = {dist,goalTime,racePace,zones,hr:_hrData,experience,runPeriod,runTime,selectedDays,sortedDays,totalWeeks,startDate,raceDate,weeks,pr:{pr5k,pr10k,prhalf,prfull},totalKm:Math.round(weeks.reduce((s,w)=>s+w.totalKm,0)*10)/10,createdAt:new Date().toISOString()};
   renderSchedule(false);
   switchPage('home');
   document.getElementById('result-section').scrollIntoView({behavior:'smooth',block:'start'});
@@ -1397,6 +1438,21 @@ function applyPreset(id) {
   generateSchedule();
 }
 
+/* ── HEART RATE ZONES (Karvonen / HRR) ── */
+const HR_MAP = { easy:'z2', long:'z2', tempo:'z3', interval:'z5', race:'z4' };
+const HR_ZCOLOR = { z1:'#94A3B8', z2:'#6EE7B7', z3:'#FBBF24', z4:'#FB923C', z5:'#FCA5A5' };
+function getHRZones(maxHR, restHR) {
+  const hrr = maxHR - restHR, z = p => Math.round(hrr*p + restHR);
+  return { z1:[z(.50),z(.60)], z2:[z(.60),z(.70)], z3:[z(.70),z(.80)], z4:[z(.80),z(.90)], z5:[z(.90),z(1)] };
+}
+function renderHRZoneBox(hr) {
+  const rows = [['z1',t('hrz_z1')],['z2',t('hrz_z2')],['z3',t('hrz_z3')],['z4',t('hrz_z4')],['z5',t('hrz_z5')]];
+  return `<h3 style="font-size:.93em;font-weight:700;color:var(--secondary);margin:16px 0 8px">${t('hr_zones_title')}</h3>
+    <div class="hrz-grid">` +
+    rows.map(([k,lbl]) => `<div class="hrz-item" style="border-left-color:${HR_ZCOLOR[k]}"><span class="hrz-name" style="color:${HR_ZCOLOR[k]}">${k.toUpperCase()} · ${lbl}</span><span class="hrz-bpm">${hr.zones[k][0]}–${hr.zones[k][1]} bpm</span></div>`).join('') +
+    `</div>`;
+}
+
 /* ── RENDER ── */
 function renderSchedule(scroll=true) {
   const sd = scheduleData;
@@ -1437,16 +1493,19 @@ function renderSchedule(scroll=true) {
       const note = isRest ? '' : logNote(key);
       const stCls = st === 'done' ? ' done' : st === 'missed' ? ' missed' : '';
       const mark = st === 'done' ? '✓' : st === 'missed' ? '✗' : '';
+      const hrChip = (sd.hr && !isRest && HR_MAP[day.type]) ? (() => { const zk = HR_MAP[day.type], r = sd.hr.zones[zk]; return `<div class="hr-chip" style="color:${HR_ZCOLOR[zk]}">${zk.toUpperCase()} · ${r[0]}–${r[1]}</div>`; })() : '';
       html += `<div class="day-row${isRest?' rest':' run'}${stCls}" id="row-${key}"${isRest?'':` onclick="openLog('${key}')" title="${t('row_toggle_hint')}"`}>
         <div class="day-name">${isRest?'':`<span class="day-check">${mark}</span>`}${t('day_full')[day.dow]}<br><small style="font-weight:400;color:var(--text2)">${day.date.toLocaleDateString(locale,{day:'numeric',month:'short'})}</small></div>
         <div><span class="run-type type-${day.type}">${day.label}</span></div>
         <div class="run-desc">${day.desc}${note?`<div class="day-note">📝 ${htmlEsc(note)}</div>`:''}</div>
-        <div class="run-distance">${km}<br><small>${pa}</small></div>
+        <div class="run-distance">${km}<br><small>${pa}</small>${hrChip}</div>
       </div>`;
     });
     html += `</div></div>`;
   });
   document.getElementById('schedule-container').innerHTML = html;
+  const hrBox = document.getElementById('hr-zone-box');
+  if (hrBox) { if (sd.hr) { hrBox.innerHTML = renderHRZoneBox(sd.hr); hrBox.style.display = ''; } else { hrBox.innerHTML = ''; hrBox.style.display = 'none'; } }
   renderToday();
   renderAffiliate();
   if (scroll) document.getElementById('result-section').scrollIntoView({behavior:'smooth',block:'start'});
@@ -1956,7 +2015,7 @@ function savePlan() {
   checkSavedPlan();
 }
 function captureForm() {
-  const ids = ['pr5k_h','pr5k_m','pr5k_s','pr10k_h','pr10k_m','pr10k_s','prhalf_h','prhalf_m','prhalf_s','prfull_h','prfull_m','prfull_s','goal_distance','race_date','goal_h','goal_m','goal_s','run_period','run_time','experience','start_date'];
+  const ids = ['pr5k_h','pr5k_m','pr5k_s','pr10k_h','pr10k_m','pr10k_s','prhalf_h','prhalf_m','prhalf_s','prfull_h','prfull_m','prfull_s','goal_distance','race_date','goal_h','goal_m','goal_s','run_period','run_time','experience','start_date','hr_age','hr_rest','hr_max'];
   return Object.fromEntries(ids.map(id => [id, document.getElementById(id)?.value||'']));
 }
 function loadSavedPlan(silent) {
