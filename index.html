@@ -308,6 +308,9 @@ select option{background:#1A2540;color:var(--text)}
 .tc-bar{position:relative;height:26px;background:rgba(255,255,255,.06);border-radius:20px;overflow:hidden}
 .tc-bar-fill{height:100%;background:var(--gradient);border-radius:20px;transition:width .45s ease;min-width:0}
 .tc-bar-pct{position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:.78em;font-weight:800;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.4)}
+.tc-runner{position:absolute;top:50%;margin-top:-8px;margin-left:-8px;font-size:15px;line-height:1;transition:left .45s ease;animation:tc-run .6s ease-in-out infinite;pointer-events:none;z-index:2;filter:drop-shadow(0 1px 1px rgba(0,0,0,.5))}
+@keyframes tc-run{0%,100%{transform:translateY(0)}50%{transform:translateY(-2px)}}
+@media (prefers-reduced-motion:reduce){.tc-runner{animation:none}}
 .tc-prog-meta{font-size:.8em;color:var(--text2);margin-top:7px}
 .btn-ghost{background:rgba(255,255,255,.08);color:var(--text)}
 .day-row.missed{background:rgba(220,53,69,.06)}
@@ -448,7 +451,7 @@ select option{background:#1A2540;color:var(--text)}
         <span id="tc-prog-label">ความคืบหน้าของแผน</span>
         <span class="tc-streak" id="tc-streak"></span>
       </div>
-      <div class="tc-bar"><div class="tc-bar-fill" id="tc-bar-fill" style="width:0%"></div><span class="tc-bar-pct" id="tc-prog-pct">0%</span></div>
+      <div class="tc-bar"><div class="tc-bar-fill" id="tc-bar-fill" style="width:0%"></div><span class="tc-runner" id="tc-runner" style="left:0%">🏃</span><span class="tc-bar-pct" id="tc-prog-pct">0%</span></div>
       <div class="tc-prog-meta" id="tc-prog-meta"></div>
     </div>
     <div style="margin-top:14px;display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap">
@@ -1534,6 +1537,8 @@ function renderToday() {
   document.getElementById('tc-prog-label').textContent = t('prog_label');
   document.getElementById('tc-bar-fill').style.width = pr.pct + '%';
   document.getElementById('tc-prog-pct').textContent = pr.pct + '%';
+  const runner = document.getElementById('tc-runner');
+  if (runner) { runner.style.left = pr.pct + '%'; runner.textContent = pr.pct >= 100 ? '🏁' : '🏃'; }
   document.getElementById('tc-prog-meta').textContent = t('prog_meta', pr.done, pr.total);
   const streakEl = document.getElementById('tc-streak');
   streakEl.style.display = pr.streak > 0 ? '' : 'none';
