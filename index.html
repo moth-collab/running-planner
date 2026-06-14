@@ -149,6 +149,15 @@ select option{background:#1A2540;color:var(--text)}
 .week-header{background:linear-gradient(135deg,#1A2540,#1F2E4A);color:var(--text);padding:11px 16px;font-weight:700;display:flex;justify-content:space-between;align-items:center;font-size:.87em;border-bottom:1px solid var(--border)}
 .week-badge{background:var(--gradient);color:#fff;padding:2px 12px;border-radius:20px;font-size:.76em;font-weight:700}
 .week-days{background:rgba(255,255,255,.015)}
+.week-done .week-header{cursor:pointer}
+.week-done .week-badge{color:#6EE7B7}
+.week-collapsed .week-days{display:none}
+.wk-chev{display:inline-block;margin-right:6px;transition:transform .2s;font-size:.85em;opacity:.7}
+.schedule-week:not(.week-collapsed) .wk-chev{transform:rotate(90deg)}
+.sched-controls-row{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.log-hint{font-size:.82em;color:var(--text2);background:rgba(255,107,53,.08);border:1px solid rgba(255,107,53,.2);border-radius:10px;padding:8px 12px;flex:1;min-width:200px}
+.sched-toggle{background:rgba(255,255,255,.06);color:var(--text);border:1px solid var(--border);flex-shrink:0}
+.sched-toggle:hover{border-color:var(--primary);color:var(--primary)}
 .day-row{display:grid;grid-template-columns:110px 130px 1fr 100px;padding:10px 16px;border-bottom:1px solid rgba(255,255,255,.04);align-items:center;gap:10px;font-size:.86em;transition:background .15s}
 .day-row:hover{background:rgba(255,255,255,.03)}
 .day-row:last-child{border-bottom:none}
@@ -283,7 +292,8 @@ select option{background:#1A2540;color:var(--text)}
 /* ─── TODAY / PROGRESS / DONE ─── */
 .day-row.run{cursor:pointer}
 .day-row.run:hover{background:rgba(255,107,53,.07)}
-.day-check{display:inline-flex;width:18px;height:18px;border-radius:50%;border:2px solid var(--border);align-items:center;justify-content:center;font-size:.68em;color:#fff;margin-right:7px;vertical-align:middle;line-height:1;flex-shrink:0}
+.day-check{display:inline-flex;width:23px;height:23px;border-radius:50%;border:2px solid rgba(255,255,255,.32);background:rgba(255,255,255,.07);align-items:center;justify-content:center;font-size:.8em;color:#fff;margin-right:8px;vertical-align:middle;line-height:1;flex-shrink:0;transition:all .15s}
+.day-row.run:hover .day-check{border-color:var(--primary);background:rgba(255,107,53,.18)}
 .day-row.done .day-check{background:var(--success);border-color:var(--success)}
 .day-row.done{background:rgba(16,185,129,.06)}
 .day-row.done .run-desc{text-decoration:line-through;opacity:.55}
@@ -696,6 +706,7 @@ select option{background:#1A2540;color:var(--text)}
         <div class="card-icon">🗓️</div>
         <div><h2 data-i18n="sched_title">ตารางการฝึกซ้อมรายสัปดาห์</h2><p id="schedule-subtitle"></p></div>
       </div>
+      <div id="sched-controls"></div>
       <div id="schedule-container"></div>
 
       <div class="section-divider"></div>
@@ -1534,6 +1545,11 @@ function renderHRZoneBox(hr) {
     `</div>`;
 }
 
+/* ── SCHEDULE CONTROLS (hide completed weeks) ── */
+let hideDoneWeeks = (localStorage.getItem('hideDoneWeeks') ?? '1') === '1';
+function toggleHideDone() { hideDoneWeeks = !hideDoneWeeks; localStorage.setItem('hideDoneWeeks', hideDoneWeeks ? '1' : '0'); renderSchedule(false); }
+function toggleWeek(h) { h.parentElement.classList.toggle('week-collapsed'); }
+
 /* ── RENDER ── */
 function renderSchedule(scroll=true) {
   const sd = scheduleData;
@@ -1558,12 +1574,17 @@ function renderSchedule(scroll=true) {
     <div class="pace-item long"><div class="pace-label">${t('pace_long')}</div><div class="pace-value">${fmtPace(sd.zones.long)} /km</div></div>`;
 
   let html = '';
+  let doneWeekCount = 0;
   sd.weeks.forEach(week => {
     const wl = week.isRaceWeek ? t('week_race') : week.isDeload ? t('week_recovery') : t('week_label', week.weekNum);
     const end = new Date(week.start.getTime()+6*86400000);
     const dr = `${week.start.toLocaleDateString(locale,{day:'numeric',month:'short'})} — ${end.toLocaleDateString(locale,{day:'numeric',month:'short'})}`;
-    html += `<div class="schedule-week">
-      <div class="week-header"><span>${wl} <small style="opacity:.7;font-weight:400">${dr}</small></span><span class="week-badge">${week.totalKm} km</span></div>
+    const runDays = week.days.filter(d => d.type !== 'rest');
+    const isWeekDone = runDays.length > 0 && runDays.every(d => logStatus(dateKey(d.date)) === 'done');
+    if (isWeekDone) doneWeekCount++;
+    const collapsed = hideDoneWeeks && isWeekDone;
+    html += `<div class="schedule-week${isWeekDone?' week-done':''}${collapsed?' week-collapsed':''}">
+      <div class="week-header"${isWeekDone?' onclick="toggleWeek(this)"':''}><span>${isWeekDone?'<span class="wk-chev">▸</span>':''}${wl} <small style="opacity:.7;font-weight:400">${dr}</small></span><span class="week-badge">${isWeekDone?'✓ ':''}${week.totalKm} km</span></div>
       <div class="week-days">`;
     week.days.forEach(day => {
       const isRest = day.type==='rest';
@@ -1585,6 +1606,18 @@ function renderSchedule(scroll=true) {
     html += `</div></div>`;
   });
   document.getElementById('schedule-container').innerHTML = html;
+  const ctrls = document.getElementById('sched-controls');
+  if (ctrls) {
+    const isTh = currentLang === 'th';
+    const hint = `<div class="log-hint">${isTh ? '💡 แตะที่วันซ้อมเพื่อบันทึกผล — ✓ สำเร็จ / ✗ ไม่สำเร็จ + โน้ต' : '💡 Tap a training day to log it — ✓ done / ✗ missed + note'}</div>`;
+    let toggleBtn = '';
+    if (doneWeekCount > 0) {
+      toggleBtn = `<button class="btn btn-sm sched-toggle" onclick="toggleHideDone()">${hideDoneWeeks
+        ? (isTh ? `👁️ แสดงสัปดาห์ที่เสร็จแล้ว (${doneWeekCount})` : `👁️ Show completed weeks (${doneWeekCount})`)
+        : (isTh ? `🙈 ซ่อนสัปดาห์ที่เสร็จแล้ว (${doneWeekCount})` : `🙈 Hide completed weeks (${doneWeekCount})`)}</button>`;
+    }
+    ctrls.innerHTML = `<div class="sched-controls-row">${hint}${toggleBtn}</div>`;
+  }
   const hrBox = document.getElementById('hr-zone-box');
   if (hrBox) { if (sd.hr) { hrBox.innerHTML = renderHRZoneBox(sd.hr); hrBox.style.display = ''; } else { hrBox.innerHTML = ''; hrBox.style.display = 'none'; } }
   renderToday();
