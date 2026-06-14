@@ -149,7 +149,7 @@ select option{background:#1A2540;color:var(--text)}
 .week-header{background:linear-gradient(135deg,#1A2540,#1F2E4A);color:var(--text);padding:11px 16px;font-weight:700;display:flex;justify-content:space-between;align-items:center;font-size:.87em;border-bottom:1px solid var(--border)}
 .week-badge{background:var(--gradient);color:#fff;padding:2px 12px;border-radius:20px;font-size:.76em;font-weight:700}
 .week-days{background:rgba(255,255,255,.015)}
-.week-done .week-header{cursor:pointer}
+.week-logged .week-header{cursor:pointer}
 .week-done .week-badge{color:#6EE7B7}
 .week-collapsed .week-days{display:none}
 .wk-chev{display:inline-block;margin-right:6px;transition:transform .2s;font-size:.85em;opacity:.7}
@@ -1580,11 +1580,12 @@ function renderSchedule(scroll=true) {
     const end = new Date(week.start.getTime()+6*86400000);
     const dr = `${week.start.toLocaleDateString(locale,{day:'numeric',month:'short'})} — ${end.toLocaleDateString(locale,{day:'numeric',month:'short'})}`;
     const runDays = week.days.filter(d => d.type !== 'rest');
-    const isWeekDone = runDays.length > 0 && runDays.every(d => logStatus(dateKey(d.date)) === 'done');
-    if (isWeekDone) doneWeekCount++;
-    const collapsed = hideDoneWeeks && isWeekDone;
-    html += `<div class="schedule-week${isWeekDone?' week-done':''}${collapsed?' week-collapsed':''}">
-      <div class="week-header"${isWeekDone?' onclick="toggleWeek(this)"':''}><span>${isWeekDone?'<span class="wk-chev">▸</span>':''}${wl} <small style="opacity:.7;font-weight:400">${dr}</small></span><span class="week-badge">${isWeekDone?'✓ ':''}${week.totalKm} km</span></div>
+    const isWeekAllDone = runDays.length > 0 && runDays.every(d => logStatus(dateKey(d.date)) === 'done');
+    const isWeekLogged = runDays.length > 0 && runDays.every(d => { const s = logStatus(dateKey(d.date)); return s === 'done' || s === 'missed'; });
+    if (isWeekLogged) doneWeekCount++;
+    const collapsed = hideDoneWeeks && isWeekLogged;
+    html += `<div class="schedule-week${isWeekLogged?' week-logged':''}${isWeekAllDone?' week-done':''}${collapsed?' week-collapsed':''}">
+      <div class="week-header"${isWeekLogged?' onclick="toggleWeek(this)"':''}><span>${isWeekLogged?'<span class="wk-chev">▸</span>':''}${wl} <small style="opacity:.7;font-weight:400">${dr}</small></span><span class="week-badge">${isWeekLogged?'✓ ':''}${week.totalKm} km</span></div>
       <div class="week-days">`;
     week.days.forEach(day => {
       const isRest = day.type==='rest';
@@ -1613,8 +1614,8 @@ function renderSchedule(scroll=true) {
     let toggleBtn = '';
     if (doneWeekCount > 0) {
       toggleBtn = `<button class="btn btn-sm sched-toggle" onclick="toggleHideDone()">${hideDoneWeeks
-        ? (isTh ? `👁️ แสดงสัปดาห์ที่เสร็จแล้ว (${doneWeekCount})` : `👁️ Show completed weeks (${doneWeekCount})`)
-        : (isTh ? `🙈 ซ่อนสัปดาห์ที่เสร็จแล้ว (${doneWeekCount})` : `🙈 Hide completed weeks (${doneWeekCount})`)}</button>`;
+        ? (isTh ? `👁️ แสดงสัปดาห์ที่บันทึกครบ (${doneWeekCount})` : `👁️ Show logged weeks (${doneWeekCount})`)
+        : (isTh ? `🙈 ซ่อนสัปดาห์ที่บันทึกครบ (${doneWeekCount})` : `🙈 Hide logged weeks (${doneWeekCount})`)}</button>`;
     }
     ctrls.innerHTML = `<div class="sched-controls-row">${hint}${toggleBtn}</div>`;
   }
