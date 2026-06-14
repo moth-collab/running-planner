@@ -1484,7 +1484,9 @@ function applyPreset(id) {
 /* ── REVIEWS (real only) ── */
 // Add REAL reviews here as they come in, e.g.:
 // { initials:'PJ', name:'ปนัดดา', text:'...', result:'...' }
-const REVIEWS = [];
+const REVIEWS = [
+  { initials:'มน', name:'มน', text:'แอพใช้งานง่ายค่ะ ปกติคือแพลนวิ่งเอง คิดเองวิ่งเอง เลยทำให้พัฒนาการวิ่งได้ช้า แต่พอมีแอพช่วยคิดแพลนการวิ่งให้ ทำให้เราโฟกัสการวิ่งและพัฒนาการวิ่งได้ดีขึ้น' },
+];
 function renderReviews() {
   const grid = document.getElementById('reviews-grid'); if (!grid) return;
   const isTh = currentLang === 'th';
